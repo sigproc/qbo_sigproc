@@ -1,14 +1,14 @@
 <package>
-  <description brief="qbo_sigproc_launch">
-
-     qbo_sigproc_launch
-
+  <description brief="roslaunch files for SigProC Q.bo">
+    Launch files which take care of launching Q.bo control and sensor nodes on
+    the SigProC Q.bo.
   </description>
   <author>Rich Wareham</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/qbo_sigproc_launch</url>
-
+  <url>https://github.com/sigproc/qbo_sigproc/tree/master/qbo_sigproc_launch</url>
+  <depend package="qbo_arduqbo" />
 </package>
-
-
+<!--
+  vim:sw=2:sts=2:et
+-->
