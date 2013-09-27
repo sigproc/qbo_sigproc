@@ -1,0 +1,24 @@
+<launch>
+  <!--
+    Define an argument specifying the address of the Q.bo. This can be
+    overridden on the roslaunch command line via qbo_address:=somename. 
+    -->
+  <arg name="qbo_address" default="binky" />
+  <arg name="qbo_user" default="qbo" />
+
+  <group>
+    <!--
+      Putting the machine *within* the group and setting it as a default means
+      nodes within this group will be launched on the Q.bo. Notice that we 
+      hack the ROS_HOSTNAME variable in the command line for the env-loader. 
+      This is more than a little mucky.
+      -->
+    <machine name="qbo" address="$(arg qbo_address)" user="$(arg qbo_user)" default="true"
+      env-loader="ROS_HOSTNAME=$(arg qbo_address) /opt/ros/groovy/env.sh" />
+
+    <include file="$(find qbo_arduqbo)/launch/qbo_dynamixel_with_sensors.launch" />
+  </group>
+</launch>
+<!--
+  vim:sw=2:sts=2:et:filetype=xml
+  -->
