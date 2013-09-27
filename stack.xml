@@ -1,0 +1,15 @@
+<stack>
+  <description brief="specialised packages for the Q.bo within SigProC">
+    A set of packages for the Q.bo robot within the Signal Processing and
+    Communications Laboratory, Department of Engineering, University of
+    Cambridge.
+  </description>
+  <author>Maintained by Rich Wareham</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>https://github.com/sigproc/qbo_sigproc</url>
+  <depend stack="ros"/>
+</stack>
+<!--
+  vim:sw=2:sts=2:et
+-->
