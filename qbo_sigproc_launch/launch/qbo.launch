@@ -17,6 +17,7 @@
       env-loader="ROS_HOSTNAME=$(arg qbo_address) /opt/ros/groovy/env.sh" />
 
     <include file="$(find qbo_arduqbo)/launch/qbo_dynamixel_with_sensors.launch" />
+    <include file="$(find qbo_sigproc_launch)/launch/qbo_stereo_cameras.launch" />
   </group>
 </launch>
 <!--
