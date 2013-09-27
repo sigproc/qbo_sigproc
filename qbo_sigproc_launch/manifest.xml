@@ -1,0 +1,14 @@
+<package>
+  <description brief="qbo_sigproc_launch">
+
+     qbo_sigproc_launch
+
+  </description>
+  <author>Rich Wareham</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/qbo_sigproc_launch</url>
+
+</package>
+
+
