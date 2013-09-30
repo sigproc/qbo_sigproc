@@ -16,9 +16,9 @@
     <machine name="qbo" address="$(arg qbo_address)" user="$(arg qbo_user)" default="true"
       env-loader="ROS_HOSTNAME=$(arg qbo_address) ~/cued-masters/devel/env.sh" />
 
-    <include file="$(find qbo_sigproc_launch)/launch/include/kinect_frames.launch" />
+    <!-- Bring up qbo with frames for cameras and sensors available. -->
+    <include file="$(find qbo_sigproc_launch)/launch/include/bringup_with_sensors.launch" />
 
-    <include file="$(find qbo_arduqbo)/launch/qbo_dynamixel_with_sensors.launch" />
     <!-- <include file="$(find qbo_sigproc_launch)/launch/qbo_stereo_cameras.launch" /> -->
     <!-- <node name="talk" pkg="qbo_talk" type="festival_node.py" /> -->
   </group>

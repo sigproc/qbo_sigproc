@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find qbo_sigproc_launch)/launch/include/kinect_frames.launch" />
+  <include file="$(find qbo_arduqbo)/launch/qbo_dynamixel_with_sensors.launch" />
+</launch>
