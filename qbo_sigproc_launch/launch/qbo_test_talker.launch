@@ -17,7 +17,7 @@
       This is more than a little mucky.
       -->
     <machine name="qbo" address="$(arg qbo_address)" user="$(arg qbo_user)" default="true"
-      env-loader="ROS_HOSTNAME=$(arg qbo_address) /opt/ros/groovy/env.sh" />
+      env-loader="ROS_HOSTNAME=$(arg qbo_address) ~/cued-masters/devel/env.sh" />
 
     <node name="talker" pkg="rospy_tutorials" type="talker.py" />
   </group>
