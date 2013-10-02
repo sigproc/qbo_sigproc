@@ -1,0 +1,16 @@
+<package>
+  <description brief="qbo_toys">
+
+     qbo_toys
+
+  </description>
+  <author>Rich Wareham</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/qbo_toys</url>
+
+  <depend package="qbo_talk" />
+  <depend package="rospy" />
+</package>
+
+
