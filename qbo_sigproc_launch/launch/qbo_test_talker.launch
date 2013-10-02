@@ -3,7 +3,7 @@
     Define an argument specifying the address of the Q.bo. This can be
     overridden on the roslaunch command line via qbo_address:=somename. 
     -->
-  <arg name="qbo_address" default="binky" />
+  <arg name="qbo_address" default="sigproc-robot1" />
   <arg name="qbo_user" default="qbo" />
 
   <!-- Launch a listener on the local machine. -->

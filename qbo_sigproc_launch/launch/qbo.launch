@@ -3,8 +3,11 @@
     Define an argument specifying the address of the Q.bo. This can be
     overridden on the roslaunch command line via qbo_address:=somename. 
     -->
-  <arg name="qbo_address" default="binky" />
+  <arg name="qbo_address" default="sigproc-robot1" />
   <arg name="qbo_user" default="qbo" />
+
+  <arg name="speech_recognition" default="false" />
+  <arg name="speech_synthesis" default="false" />
 
   <group>
     <!--
@@ -20,7 +23,14 @@
     <include file="$(find qbo_sigproc_launch)/launch/include/bringup_with_sensors.launch" />
 
     <!-- <include file="$(find qbo_sigproc_launch)/launch/qbo_stereo_cameras.launch" /> -->
-    <!-- <node name="talk" pkg="qbo_talk" type="festival_node.py" /> -->
+
+    <group if="$(arg speech_synthesis)">
+      <node name="talk" pkg="qbo_talk" type="festival_node.py" />
+    </group>
+
+    <group if="$(arg speech_recognition)">
+      <node name="listen" pkg="qbo_listen" type="qbo_listen" />
+    </group>
   </group>
 </launch>
 <!--
