@@ -26,7 +26,7 @@ $ roslaunch qbo_sigproc_launch qbo.launch arg1:=value arg2:=value
 
 ### Q.bo networking
 
-The ``qbo\_address`` and ``qbo\_user`` specify the hostname of the Q.bo and the username to use to log in:
+The ``qbo_address`` and ``qbo_user`` specify the hostname of the Q.bo and the username to use to log in:
 
 **qbo\_address**: default ``sigproc-robot1``, usual values are ``sigproc-robot1`` or ``binky``.
 
@@ -37,9 +37,9 @@ The ``qbo\_address`` and ``qbo\_user`` specify the hostname of the Q.bo and the 
 The following arguments can be set to ``true`` or ``false`` to enable or
 disable certain features. The default is always ``false``.
 
-**speech\_recognition**: if ``true``, launch the ``qbo\_listen`` node
+**speech\_recognition**: if ``true``, launch the ``qbo_listen`` node
 
-**speech\_synthesis**: if ``true``, launch the ``qbo\_talk`` node
+**speech\_synthesis**: if ``true``, launch the ``qbo_talk`` node
 
 **cameras**: if ``true``, enable the eye cameras (default is monocular vision on the left eye)
 
@@ -49,7 +49,7 @@ disable certain features. The default is always ``false``.
 
 **mono\_camera\_side**: default ``left``, possible values are ``left`` or
 ``right``. Which side should the monocular camera publish data to. I.e. should
-the images appear as ``/stereo/left/image\_raw`` or ``/stereo/right/image\_raw``.
+the images appear as ``/stereo/left/image_raw`` or ``/stereo/right/image_raw``.
 
 **mono\_camera\_device**: default ``/dev/video0``, usual values are
 ``/dev/video0`` or ``/dev/video1``. This specifies which video4linux device is
@@ -59,8 +59,8 @@ will have different devices.
 ### Extra includes
 
 **extra\_include**: if this is set then the launch file
-``path/to/qbo\_sigproc\_launch/launches/include/<value>.launce`` will also be
-included with ``<value>`` replaced by the value of the ``extra\_include``
+``path/to/qbo_sigproc_launch/launches/include/<value>.launch`` will also be
+included with ``<value>`` replaced by the value of the ``extra_include``
 argument. Note that you don't specify the trailing ``.launch``.
 
 The ``face`` extra will launch the face tracking and following system. Let Q.bo
@@ -68,7 +68,7 @@ follow you around the room.
 
 ## Setup notes for Q.bo
 
-These launch files assume that you have a [catkin workspace](http://wiki.ros.org/catkin/Tutorials/create\_a\_workspace)
+These launch files assume that you have a [catkin workspace](http://wiki.ros.org/catkin/Tutorials/create_a_workspace)
 set up in the home directory on the Q.bo under ``~/cued-masters/``. This could
 be set as a parameter should anyone else need to use the Q.bo. If you are
 installing packages locally on the Q.bo then please install into that
