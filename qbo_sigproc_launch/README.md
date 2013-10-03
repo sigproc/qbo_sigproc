@@ -30,7 +30,7 @@ The ``qbo_address`` and ``qbo_user`` specify the hostname of the Q.bo and the us
 
 **qbo\_address**: default ``sigproc-robot1``, usual values are ``sigproc-robot1`` or ``binky``.
 
-**wbo\_username**: default ``qbo``
+**qbo\_username**: default ``qbo``
 
 ### Features
 
