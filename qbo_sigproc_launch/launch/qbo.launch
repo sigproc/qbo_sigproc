@@ -8,6 +8,10 @@
 
   <arg name="speech_recognition" default="false" />
   <arg name="speech_synthesis" default="false" />
+  <arg name="cameras" default="false" />
+  <arg name="stereo" default="false" />
+  <arg name="mono_camera_side" default="left" />
+  <arg name="mono_camera_device" default="/dev/video0" />
 
   <group>
     <!--
@@ -22,7 +26,17 @@
     <!-- Bring up qbo with frames for cameras and sensors available. -->
     <include file="$(find qbo_sigproc_launch)/launch/include/bringup_with_sensors.launch" />
 
-    <!-- <include file="$(find qbo_sigproc_launch)/launch/qbo_stereo_cameras.launch" /> -->
+    <group if="$(arg cameras)">
+      <group if="$(arg stereo)">
+        <include file="$(find qbo_sigproc_launch)/launch/include/stereo_cameras.launch" />
+      </group>
+      <group unless="$(arg stereo)">
+        <include file="$(find qbo_sigproc_launch)/launch/include/mono_camera.launch">
+          <arg name="mono_camera_side" value="$(arg mono_camera_side)" />
+          <arg name="mono_camera_device" default="$(arg mono_camera_device)" />
+        </include>
+      </group>
+    </group>
 
     <group if="$(arg speech_synthesis)">
       <node name="talk" pkg="qbo_talk" type="festival_node.py" />
