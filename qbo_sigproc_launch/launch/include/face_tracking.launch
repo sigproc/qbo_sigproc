@@ -1,0 +1,14 @@
+<launch>
+  <!-- 
+    Note: the name of this node is fixed because it always looks
+    for the face classifier path under /qbo_face_tracking/face_classifier_path
+    and not ~face_classifier_path.
+    -->
+  <node name="qbo_face_tracking" pkg="qbo_face_tracking" type="qbo_face_tracking">
+    <param name="face_classifier_path"
+      value="/usr/share/opencv/haarcascades/haarcascade_frontalface_alt2.xml" />
+  </node>
+</launch>
+<!--
+  vim:sw=2:sts=2:et:filetype=xml
+  -->

@@ -13,6 +13,8 @@
   <arg name="mono_camera_side" default="left" />
   <arg name="mono_camera_device" default="/dev/video0" />
 
+  <arg name="extra_include" default="null" />
+
   <group>
     <!--
       Putting the machine *within* the group and setting it as a default means
@@ -45,6 +47,8 @@
     <group if="$(arg speech_recognition)">
       <node name="listen" pkg="qbo_listen" type="qbo_listen" />
     </group>
+
+    <include file="$(find qbo_sigproc_launch)/launch/include/$(arg extra_include).launch" />
   </group>
 </launch>
 <!--

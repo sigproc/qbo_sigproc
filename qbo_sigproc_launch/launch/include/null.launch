@@ -1,0 +1,8 @@
+<!--
+  An empty launch file which is the default 'extra' include in qbo.launch.
+  -->
+<launch>
+</launch>
+<!--
+  vim:sw=2:sts=2:et:filetype=xml
+  -->
