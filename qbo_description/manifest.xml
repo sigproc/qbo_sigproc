@@ -1,0 +1,14 @@
+<package>
+  <description brief="qbo_description">
+
+     qbo_description
+
+  </description>
+  <author>Q.bo</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/qbo_description</url>
+
+</package>
+
+
