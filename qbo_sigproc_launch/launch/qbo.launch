@@ -28,6 +28,9 @@
     <!-- Bring up qbo with frames for cameras and sensors available. -->
     <include file="$(find qbo_sigproc_launch)/launch/include/bringup_with_sensors.launch" />
 
+    <!-- Add in head joint odometry -->
+    <node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />
+
     <group if="$(arg cameras)">
       <group if="$(arg stereo)">
         <include file="$(find qbo_sigproc_launch)/launch/include/stereo_cameras.launch" />
