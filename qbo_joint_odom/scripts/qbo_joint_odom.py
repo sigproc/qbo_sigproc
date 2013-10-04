@@ -46,8 +46,8 @@ class JointOdomController(object):
         self.head_tilt = head_tilt or Mapping()
         self.head_offset = np.asarray(head_offset or [0, 0, 0.5])
 
-        # The default frame ids are 'base_footprint' and 'head'
-        self.base_frame_id = base_frame_id or 'base_footprint'
+        # The default frame ids are 'base_link' and 'head'
+        self.base_frame_id = base_frame_id or 'base_link'
         self.head_frame_id = head_frame_id or 'head'
 
         # The last pan and tilt as an angle
