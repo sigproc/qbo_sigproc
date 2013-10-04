@@ -96,8 +96,6 @@ def mapping_from_servo(param_base):
     used:
 
         /foo/bar/invert
-        /foo/bar/max_angle_degrees
-        /foo/bar/min_angle_degrees
         /foo/bar/neutral
         /foo/bar/range
         /foo/bar/ticks
@@ -111,10 +109,6 @@ def mapping_from_servo(param_base):
     try:
         invert = rospy.get_param(param_base + '/invert')
         rospy.loginfo('invert: {0}'.format(invert))
-        max_angle_degrees = rospy.get_param(param_base + '/max_angle_degrees')
-        rospy.loginfo('max_angle_degrees: {0}'.format(max_angle_degrees))
-        min_angle_degrees = rospy.get_param(param_base + '/min_angle_degrees')
-        rospy.loginfo('min_angle_degrees: {0}'.format(min_angle_degrees))
         neutral = rospy.get_param(param_base + '/neutral')
         rospy.loginfo('neutral: {0}'.format(neutral))
         range_ = rospy.get_param(param_base + '/range')
