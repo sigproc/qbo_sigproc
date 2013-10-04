@@ -161,8 +161,8 @@ def main():
 
     # initialise the controller
     odom_controller = JointOdomController(
-            head_pan = head_pan_mapping,
-            head_tilt = head_tilt_mapping,
+            head_pan = head_pan_mapping, head_tilt = head_tilt_mapping,
+            head_frame_id = head_frame_id, base_frame_id = base_frame_id,
             head_offset = head_offset)
 
     # which topics should we subscribe to?
