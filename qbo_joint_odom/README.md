@@ -50,7 +50,7 @@ parameters are queried:
 - *servo\_ns*/neutral: the encoded value when the servo is at the neutral, or
   central, position.
 - *servo\_ns*/ticks: the range of the servo in encoder values.
-- *servo\_ns*/ticks: the range of the servo in degrees.
+- *servo\_ns*/range: the range of the servo in degrees.
 
 For the head pan and tilt servos, *servo\ns* is replaced as appropriate by the
 values of the ~head\_pan\_joint/servo\_ns and ~head\_tilt\_joint/servo\_ns
