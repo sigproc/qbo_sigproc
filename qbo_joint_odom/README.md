@@ -19,7 +19,7 @@ through the nose and the y-axis points out through the side of the head.
 
 **~base\_frame\_id** (string, default: 'base\_link'): parent frame id of head pose.
 
-**~head\_offset** (float[3], default: [0,0,0.5]): the offset from
+**~head\_offset** (float[3], default: [0,0,0.3]): the offset from
 *base_frame_id* to the head pivot point.
 
 **~head\_pan\_joint/topic** (string, default:

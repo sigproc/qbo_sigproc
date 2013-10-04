@@ -44,7 +44,7 @@ class JointOdomController(object):
         # The default is to have an identity mapping
         self.head_pan = head_pan or Mapping()
         self.head_tilt = head_tilt or Mapping()
-        self.head_offset = np.asarray(head_offset or [0, 0, 0.5])
+        self.head_offset = np.asarray(head_offset or [0, 0, 0.3])
 
         # The default frame ids are 'base_link' and 'head'
         self.base_frame_id = base_frame_id or 'base_link'
