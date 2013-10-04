@@ -36,14 +36,15 @@ class Mapping(object):
 
 class JointOdomController(object):
     """
-    Publish a tf from /base_footprint to /head when pan and tilt angles update.
+    Publish a tf from base_frame_id to head_frame_id when pan and tilt angles update.
     
     """
 
-    def __init__(self, head_pan=None, head_tilt=None, base_frame_id=None, head_frame_id=None):
+    def __init__(self, head_pan=None, head_tilt=None, base_frame_id=None, head_frame_id=None, head_offset=None):
         # The default is to have an identity mapping
         self.head_pan = head_pan or Mapping()
         self.head_tilt = head_tilt or Mapping()
+        self.head_offset = np.asarray(head_offset or [0, 0, 0.5])
 
         # The default frame ids are 'base_footprint' and 'head'
         self.base_frame_id = base_frame_id or 'base_footprint'
@@ -84,7 +85,7 @@ class JointOdomController(object):
         
         # Calculate and send the tf
         br.sendTransform(
-                (0, 0, 0.5),    # head is 0.5m above base_footprint
+                self.head_offset,
                 tf.transformations.quaternion_from_matrix(pose),
                 self.when, self.head_frame_id, self.base_frame_id)
 
@@ -142,6 +143,13 @@ def main():
     # initialise our node
     rospy.init_node('qbo_joint_odom')
 
+    # get the head offset
+    head_offset = rospy.get_param('~head_offset', None)
+
+    # get the frame ids
+    head_frame_id = rospy.get_param('~head_frame_id', None)
+    base_frame_id = rospy.get_param('~base_frame_id', None)
+
     # which namespace can we find parameters for the servos in?
     head_pan_joint_servo = str(rospy.get_param('~head_pan_joint/servo_ns',
         '/qbo_arduqbo/dynamixelservo/head_pan_joint'))
@@ -154,7 +162,8 @@ def main():
     # initialise the controller
     odom_controller = JointOdomController(
             head_pan = head_pan_mapping,
-            head_tilt = head_tilt_mapping)
+            head_tilt = head_tilt_mapping,
+            head_offset = head_offset)
 
     # which topics should we subscribe to?
     head_pan_joint_topic = str(rospy.get_param('~head_pan_joint/topic',
