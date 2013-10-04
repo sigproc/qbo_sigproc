@@ -12,8 +12,18 @@
   <arg name="stereo" default="false" />
   <arg name="mono_camera_side" default="left" />
   <arg name="mono_camera_device" default="/dev/video0" />
-
+  <arg name="depth_camera" default="false" />
+  <arg name="rqt_console" default="false" />
+  <arg name="rviz" default="false" />
   <arg name="extra_include" default="null" />
+
+  <group if="$(arg rqt_console)">
+    <node name="console" pkg="rqt_console" type="rqt_console" />
+  </group>
+
+  <group if="$(arg rviz)">
+    <node name="rviz" pkg="rviz" type="rviz" />
+  </group>
 
   <group>
     <!--
@@ -49,6 +59,12 @@
 
     <group if="$(arg speech_recognition)">
       <node name="listen" pkg="qbo_listen" type="qbo_listen" />
+    </group>
+
+    <group if="$(arg depth_camera)">
+      <include file="$(find qbo_sigproc_launch)/launch/include/openni.launch">
+        <arg name="machine" value="qbo" />
+      </include>
     </group>
 
     <include file="$(find qbo_sigproc_launch)/launch/include/$(arg extra_include).launch" />
