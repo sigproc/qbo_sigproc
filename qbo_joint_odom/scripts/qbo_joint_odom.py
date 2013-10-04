@@ -88,6 +88,52 @@ class JointOdomController(object):
                 tf.transformations.quaternion_from_matrix(pose),
                 self.when, self.head_frame_id, self.base_frame_id)
 
+def mapping_from_servo(param_base):
+    """
+    Initialise and return a Mapping object by reading ROS parameters from
+    param_base. If param_base is /foo/bar then the following parameters are
+    used:
+
+        /foo/bar/invert
+        /foo/bar/max_angle_degrees
+        /foo/bar/min_angle_degrees
+        /foo/bar/neutral
+        /foo/bar/range
+        /foo/bar/ticks
+
+    If any of the parameters are unavailable, a warning message is logged an
+    an identity mapping is returned.
+
+    """
+    rospy.loginfo('Extracting servo information from {0}'.format(param_base))
+
+    try:
+        invert = rospy.get_param(param_base + '/invert')
+        rospy.loginfo('invert: {0}'.format(invert))
+        max_angle_degrees = rospy.get_param(param_base + '/max_angle_degrees')
+        rospy.loginfo('max_angle_degrees: {0}'.format(max_angle_degrees))
+        min_angle_degrees = rospy.get_param(param_base + '/min_angle_degrees')
+        rospy.loginfo('min_angle_degrees: {0}'.format(min_angle_degrees))
+        neutral = rospy.get_param(param_base + '/neutral')
+        rospy.loginfo('neutral: {0}'.format(neutral))
+        range_ = rospy.get_param(param_base + '/range')
+        rospy.loginfo('range: {0}'.format(range))
+        ticks = rospy.get_param(param_base + '/ticks')
+        rospy.loginfo('ticks: {0}'.format(ticks))
+    except KeyError as e:
+        rospy.logwarn("unable to get servo parameters from {0}:{1}".format(param_base, e))
+        return Mapping()
+
+    # Calculate scale and offset
+    scale = float(range_) / float(ticks)
+    offset = -float(neutral)
+    if invert:
+        scale *= -1.0
+
+    rospy.loginfo('Computed mapping: scale={0}, offset={1}'.format(scale, offset))
+
+    return Mapping(scale, offset)
+
 def main():
     """
     Initialise the node, subscribe to topics and spin waiting for data.
@@ -96,17 +142,19 @@ def main():
     # initialise our node
     rospy.init_node('qbo_joint_odom')
 
-    # get the various mapping parameters
-    head_pan_scale = float(rospy.get_param('~head_pan_joint/scale', 0.29))
-    head_pan_offset = float(rospy.get_param('~head_pan_joint/offset', -512.0))
+    # which namespace can we find parameters for the servos in?
+    head_pan_joint_servo = str(rospy.get_param('~head_pan_joint/servo_ns',
+        '/qbo_arduqbo/dynamixelservo/head_pan_joint'))
+    head_tilt_joint_servo = str(rospy.get_param('~head_tilt_joint/servo_ns',
+        '/qbo_arduqbo/dynamixelservo/head_tilt_joint'))
 
-    head_tilt_scale = float(rospy.get_param('~head_tilt_joint/scale', 0.44))
-    head_tilt_offset = float(rospy.get_param('~head_tilt_joint/offset', -512.0))
+    head_pan_mapping = mapping_from_servo(head_pan_joint_servo)
+    head_tilt_mapping = mapping_from_servo(head_tilt_joint_servo)
 
     # initialise the controller
     odom_controller = JointOdomController(
-            head_pan = Mapping(head_pan_scale, head_pan_offset),
-            head_tilt = Mapping(head_pan_scale, head_pan_offset))
+            head_pan = head_pan_mapping,
+            head_tilt = head_tilt_mapping)
 
     # which topics should we subscribe to?
     head_pan_joint_topic = str(rospy.get_param('~head_pan_joint/topic',
