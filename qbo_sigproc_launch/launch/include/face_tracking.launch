@@ -9,6 +9,3 @@
       value="/usr/share/opencv/haarcascades/haarcascade_frontalface_alt2.xml" />
   </node>
 </launch>
-<!--
-  vim:sw=2:sts=2:et:filetype=xml
-  -->

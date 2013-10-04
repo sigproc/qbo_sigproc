@@ -51,6 +51,3 @@
     <include file="$(find qbo_sigproc_launch)/launch/include/$(arg extra_include).launch" />
   </group>
 </launch>
-<!--
-  vim:sw=2:sts=2:et:filetype=xml
-  -->

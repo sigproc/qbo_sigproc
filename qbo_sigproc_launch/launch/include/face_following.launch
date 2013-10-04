@@ -1,6 +1,3 @@
 <launch>
   <node name="face_following" pkg="qbo_face_following" type="qbo_face_following" />
 </launch>
-<!--
-  vim:sw=2:sts=2:et:filetype=xml
-  -->

@@ -10,6 +10,3 @@
   <url>https://github.com/sigproc/qbo_sigproc</url>
   <depend stack="ros"/>
 </stack>
-<!--
-  vim:sw=2:sts=2:et
--->

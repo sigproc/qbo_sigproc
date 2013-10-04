@@ -21,6 +21,3 @@
     <param name="speckle_range" value="4" />
   </node>
 </launch>
-<!--
-  vim:sw=2:sts=2:et:filetype=xml
--->

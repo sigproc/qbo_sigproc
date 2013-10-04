@@ -63,5 +63,3 @@ if __name__ == '__main__':
         main()
     except rospy.ROSInterruptException:
         pass
-
-# vim:sw=4:sts=4:et

@@ -22,6 +22,3 @@
     <node name="talker" pkg="rospy_tutorials" type="talker.py" />
   </group>
 </launch>
-<!--
-  vim:sw=2:sts=2:et:filetype=xml
-  -->

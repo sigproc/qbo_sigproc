@@ -9,6 +9,3 @@
   <url>https://github.com/sigproc/qbo_sigproc/tree/master/qbo_sigproc_launch</url>
   <depend package="qbo_arduqbo" />
 </package>
-<!--
-  vim:sw=2:sts=2:et
--->
