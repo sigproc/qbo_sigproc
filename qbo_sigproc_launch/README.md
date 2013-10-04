@@ -51,6 +51,8 @@ disable certain features. The default is always ``false``.
 
 **depth\_camera**: if ``true``, bring up the depth camera and associated processing nodes
 
+**face**: (EXPERIMENTAL) if ``true``, bring up face tracking and following
+
 ### Camera parameters
 
 **mono\_camera\_side**: default ``left``, possible values are ``left`` or
