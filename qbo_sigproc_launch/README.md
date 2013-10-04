@@ -45,6 +45,12 @@ disable certain features. The default is always ``false``.
 
 **stereo**: if ``true``, enable both eye cameras (FIXME: currently broken)
 
+**rqt_console**: if ``true``, bring up a graphical debug console
+
+**rviz**: if ``true``, bring up rviz
+
+**depth\_camera**: if ``true``, bring up the depth camera and associated processing nodes
+
 ### Camera parameters
 
 **mono\_camera\_side**: default ``left``, possible values are ``left`` or
