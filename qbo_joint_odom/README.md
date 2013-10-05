@@ -24,7 +24,7 @@ through the nose and the y-axis points out through the side of the head.
 
 **~head\_pan\_joint/topic** (string, default:
 '/qbo_arduqbo/head\_pan\_joint/state'): topic to subscribe to to get updates on
-head pan. Expects a qbo\arduqbo::motor\_state message.
+head pan. Expects a qbo\_arduqbo::motor\_state message.
 
 **~head\_pan\_joint/servo\_ns** (string, default:
 '/qbo_arduqbo/dynamixelservo/head\_pan\_joint'): base namespace for parameters
@@ -32,7 +32,7 @@ specifying joint position encoding for the pan joint. (See servo encoding below.
 
 **~head\_tilt\_joint/topic** (string, default:
 '/qbo_arduqbo/head\_tilt\_joint/state'): topic to subscribe to to get updates on
-head tilt. Expects a qbo\arduqbo::motor\_state message.
+head tilt. Expects a qbo\_arduqbo::motor\_state message.
 
 **~head\_tilt\_joint/servo\_ns** (string, default:
 '/qbo_arduqbo/dynamixelservo/head\_tilt\_joint'): base namespace for parameters
