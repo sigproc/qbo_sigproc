@@ -8,4 +8,5 @@
   <review status="unreviewed" notes=""/>
   <url>https://github.com/sigproc/qbo_sigproc/tree/master/qbo_sigproc_launch</url>
   <depend package="qbo_arduqbo" />
+  <depend package="qbo_joint_odom" />
 </package>
