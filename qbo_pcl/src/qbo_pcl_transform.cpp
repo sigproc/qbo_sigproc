@@ -3,6 +3,7 @@
 // PCL specifics:
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/point_cloud.h>
+#include <pcl_ros/transforms.h>
 #include <pcl/point_types.h>
 // tf specifics
 #include <tf/transform_listener.h>
@@ -17,24 +18,29 @@
 
 //Instantiating the publisher that publishes the transformed pointcloud;
 ros::Publisher pub; 
+tf::TransformListener* transform_listener;
 
-void transform_pc(const sensor_msgs::PointCloud2 inputCloud){
+void transform_pc(const sensor_msgs::PointCloud2 &inputCloud){
+	
+	sensor_msgs::PointCloud2 output;
+	std::cout << inputCloud.header.frame_id << std::endl;
+	output.header = inputCloud.header;
 	//Get the transform matrix and do transformation here
-
-	sensor_msgs::PointCloud2 output = inputCloud;
+	pcl_ros::transformPointCloud("/odom", inputCloud, output, *transform_listener);
 	//Publish transformed cloud here
+	std::cout << output.header.frame_id << std::endl;
 	pub.publish(output);
 }
 
 int main(int argc, char **argv)
 {
-	ros::init(argc,argv, "listener");
+	ros::init(argc,argv, "pointcloud_transformer");
 
 	ros::NodeHandle node;
-
+	transform_listener = new tf::TransformListener();
 	ros::Subscriber sub = node.subscribe("camera/depth/points", 1, transform_pc);
 
-	pub = node.advertise<sensor_msgs::PointCloud2> ("camera/transformed_depth_points",1);
+	pub = node.advertise<sensor_msgs::PointCloud2> ("camera/depth/transformed_points",1);
 
 	ros::spin();
 }
