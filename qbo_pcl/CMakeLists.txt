@@ -138,3 +138,6 @@ target_link_libraries(qbo_pcl_transform ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 add_executable(qbo_pcl_accumulate src/qbo_pcl_accumulate.cpp)
 target_link_libraries(qbo_pcl_accumulate ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+add_executable(qbo_pcl_decimator src/qbo_pcl_decimator.cpp)
+target_link_libraries(qbo_pcl_decimator ${catkin_LIBRARIES} ${PCL_LIBRARIES})
