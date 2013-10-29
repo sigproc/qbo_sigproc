@@ -8,39 +8,53 @@
 // tf specifics
 #include <tf/transform_listener.h>
 #include <iostream>
-
-//Need to be able to listen for both point cloud and tf frame
-
-//I'm going to start by just trying to write the listeners for those,
-//which will read back the messages to the console. I'll start with
-//the tf listener and move on to the pcl listener
+#include <string>
 
 
-//Instantiating the publisher that publishes the transformed pointcloud;
-ros::Publisher pub; 
-tf::TransformListener* transform_listener;
+class Transformer
+{
+public:
+	Transformer(std::string target_frame="/odom",std::string source_pc_topic="camera/depth/points", std::string target_pc_topic="camera/depth/transformed_points")
+	{
+		_target_frame = target_frame;
+		_sub = _node.subscribe(source_pc_topic, 1, &Transformer::transformAndPublishPC,this);
+		_pub = _node.advertise<sensor_msgs::PointCloud2> (target_pc_topic,1);
+		ROS_INFO("Transformer initialized");
+	}
+	~Transformer(){
+	}
 
-void transform_pc(const sensor_msgs::PointCloud2 &inputCloud){
-	
+	void transformAndPublishPC(const sensor_msgs::PointCloud2&);
+
+private:
+	std::string _target_frame;
+	ros::NodeHandle _node;
+	ros::Publisher _pub; 
+	tf::TransformListener _transform_listener;
+	ros::Subscriber _sub;
+};
+
+void Transformer::transformAndPublishPC(const sensor_msgs::PointCloud2 &inputCloud){
+	ROS_INFO("Transforming PC");
 	sensor_msgs::PointCloud2 output;
 	std::cout << inputCloud.header.frame_id << std::endl;
 	output.header = inputCloud.header;
 	//Get the transform matrix and do transformation here
-	pcl_ros::transformPointCloud("/odom", inputCloud, output, *transform_listener);
+
+	if(!pcl_ros::transformPointCloud(_target_frame, inputCloud, output, _transform_listener)){
+		ROS_ERROR("Something went wrong when transforming PC");
+		return;
+	}
 	//Publish transformed cloud here
 	std::cout << output.header.frame_id << std::endl;
-	pub.publish(output);
+	_pub.publish(output);
 }
 
 int main(int argc, char **argv)
 {
 	ros::init(argc,argv, "pointcloud_transformer");
 
-	ros::NodeHandle node;
-	transform_listener = new tf::TransformListener();
-	ros::Subscriber sub = node.subscribe("camera/depth/points", 1, transform_pc);
-
-	pub = node.advertise<sensor_msgs::PointCloud2> ("camera/depth/transformed_points",1);
+	Transformer myTransformer;
 
 	ros::spin();
 }
