@@ -46,7 +46,7 @@ void Accumulator::accumulate_pc(const sensor_msgs::PointCloud2 &ros_pc){
 
   	pcl::VoxelGrid<pcl::PointXYZ> sor;
   	sor.setInputCloud (_accumulated_points_ptr);
-  	sor.setLeafSize (0.1f, 0.1f, 0.1f);
+  	sor.setLeafSize (0.05f, 0.05f, 0.05f);
   	pcl::PointCloud<pcl::PointXYZ> temp;
   	sor.filter(temp);
 

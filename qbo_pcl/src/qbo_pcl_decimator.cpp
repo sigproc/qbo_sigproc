@@ -38,7 +38,7 @@ void Decimator::decimate_pc(const sensor_msgs::PointCloud2 &rich_ros_pc){
 
   pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
   sor.setInputCloud (rich_pcl_pc);
-  sor.setLeafSize (0.1f, 0.1f, 0.1f);
+  sor.setLeafSize (0.05f, 0.05f, 0.05f);
   sor.filter(*sparse_pcl_pc);
 
  	std::cout << "PointCloud before filtering: " << rich_pcl_pc->width * rich_pcl_pc->height 

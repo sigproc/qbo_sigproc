@@ -34,14 +34,11 @@ void Point2PointNavigator::navigate(geometry_msgs::PoseStamped msg){
 	ROS_INFO("Recieved Pose");
 	try{
 		tf::StampedTransform transform;
-    	transform_listener.lookupTransform("/base_link", msg.header.frame_id, ros::Time(0), transform);
+    	transform_listener.lookupTransform("/odom", msg.header.frame_id, ros::Time(0), transform);
     	ROS_INFO("Transform Calculated");
-    	double x;
-    	double y;
-    	double z;
     	tf::Vector3 t;
     	t=transform.getOrigin();
-    	std::cout<<x<<" "<<y<<" "<<z<<std::endl;
+    	std::cout<<t[0]<<" "<<t[1]<<" "<<t[2]<<std::endl;
     }
     catch (tf::TransformException ex){
       	ROS_ERROR("%s",ex.what());
