@@ -10,7 +10,9 @@
 #include <iostream>
 #include <string>
 
-
+/*Transformer transforms point clouds published on the "camera/depth/points" topic into the /odom frame. 
+Publishes the transformed point cloud on the "camera/depth/transformed_points" topic.
+*/
 class Transformer
 {
 public:

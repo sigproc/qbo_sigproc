@@ -8,6 +8,10 @@
 #include <iostream>
 #include <pcl/filters/voxel_grid.h>
 
+/*Accumulator takes a point cloud published on the topic "camera/depth/transformed_points" as input
+ and appends it to an existing point cloud. To avoid memory catastrophe, we filter the 
+ accumulated points with a voxel filter after they have been added. The resulting accumulated 
+ and filtered point cloud is then published to the topic "map/point_cloud".*/
 class Accumulator
 {
 public:

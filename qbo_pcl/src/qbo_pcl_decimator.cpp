@@ -10,7 +10,10 @@
 #include <iostream>
 
 
-
+/*
+ Decimator filters point clouds on the "camera/depth/transformed_points" topic with a voxel grid filter and 
+ publishes them on the "camera/depth/decimated_points" topic.
+*/
 class Decimator
 {
 public:
