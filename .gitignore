@@ -1,1 +1,4 @@
 *.pyc
+
+# ignore backup files from editors
+*~
