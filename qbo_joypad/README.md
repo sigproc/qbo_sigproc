@@ -1,8 +1,16 @@
 # Q.bo USB Xbox 360 Joypad Library Package: qbo_joypad
 
 This package contains applications to control the Q.bo via Xbox 360 Joypad
-To run the package, type: 
+To run the package, type:  
 roslaunch qbo_joypad joypad.launch
+
+Controls:  
+Hold RB + Left thumb stick controls movement  
+Right thumb stick controls head  
+Left and Right triggers control eyelids  
+D-pad controls the mouth (LB to turn off mouth LED's)  
+ABXY buttons control nose  
+
 
 ## joypad_controller:
 
