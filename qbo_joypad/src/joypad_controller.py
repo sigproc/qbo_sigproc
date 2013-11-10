@@ -12,8 +12,8 @@ from geometry_msgs.msg import Twist
 from std_msgs.msg import String
 from sensor_msgs.msg import Joy
 from sensor_msgs.msg import JointState
-from qbo_depth_slam.msg import Mouth
-from qbo_depth_slam.msg import Nose
+from qbo_joypad.msg import Mouth
+from qbo_joypad.msg import Nose
 from std_msgs.msg import Header
 
 #Import other libraries
