@@ -1,8 +1,24 @@
-# Q.bo USB Xbox 360 Joypad Library Package: qbo_joypad
+# Q.bo USB Xbox 360 Joypad Library Package by fg295: qbo_joypad
 
 This package contains applications to control the Q.bo via Xbox 360 Joypad
-To run the package, type:  
-roslaunch qbo_joypad joypad.launch
+To use:  
+
+First, build the package. In a terminal, navigate to the root of your catkin workspace (eg. ~/cued-masters) and type:
+```console
+$ catkin_make
+```  
+
+Second, install required dependencies:
+```console
+$ rosdep install qbo_joypad
+```  
+
+Third, plug in the Xbox360 controller and hold the 'home' button to power it on (If you are using the wireless controller with USB adapter you must also sync the joypad at this stage by holding the sync button on both adapter and Joypad - Note that the Xbox LED halo will continue to flash after a successful sync, unlike the xbox. This is normal)
+
+Finally, to launch the application type:
+```console
+$ roslaunch qbo_joypad joypad.launch
+```  
 
 Controls:  
 Hold RB + Left thumb stick controls movement  
