@@ -3,7 +3,7 @@
 #Xbox360 joypad controller for qbo by fg295
 
 #import ROS dependencies 
-import roslib; roslib.load_manifest('qbo_depth_slam')
+import roslib; roslib.load_manifest('qbo_joypad')
 import rospy
 import random
  
