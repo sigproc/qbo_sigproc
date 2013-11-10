@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<!-- Starts the Xbox360 joypad controller for qbo  -->
+
+<launch>
+   <node name="joy" pkg="joy" type="joy_node" />
+   <node name="joypad_tester" pkg="qbo_joypad" type="joypad_tester.py" />
+   <node name="joypad_controller" pkg="qbo_joypad" type="joypad_controller.py"/>
+</launch>
