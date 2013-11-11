@@ -21,6 +21,7 @@ import time
 import sys
 
 inverted='false'
+rp_latch='false'
 
 #Publish a message to move the robot 
 def move(publisher,linear,ang):
@@ -82,7 +83,9 @@ def nose(publisher, nose_color):
 
 #Called when data arrives on the '/Joy' topic
 def callback(data):
-
+    
+    global inverted
+    global rp_latch
     #Init the publishers. 'pub' for movement, 'joints_pub' for head/eyelids.
     pub=rospy.Publisher('/cmd_vel', Twist)
     joints_pub = rospy.Publisher('/cmd_joints', JointState)
@@ -90,6 +93,8 @@ def callback(data):
     nose_pub = rospy.Publisher('/cmd_nose', Nose)
  
     #Complete button mapping. 'buttons' can be either 1 or 0. 'axes' ranges from -1 to 1.
+    
+    #Wireless Joypad
     #A               data.buttons[0]==1
     #B               data.buttons[1]==1
     #X               data.buttons[2]==1
@@ -110,6 +115,25 @@ def callback(data):
     #lAnalog(x, y)   data.axes[1], data.axes[0]
     #rAnalog(x, y)   data.axes[3], data.axes[4]
 
+    #wired Joypad
+    #A               data.buttons[0]==1
+    #B               data.buttons[1]==1
+    #X               data.buttons[2]==1
+    #Y               data.buttons[3]==1
+    #back            data.buttons[6]==1
+    #centre          data.buttons[8]==1
+    #start           data.buttons[7]==1
+    #lAnalog button  data.buttons[9]==1
+    #rAnalog button  data.buttons[10]==1
+    #lb              data.buttons[4]==1
+    #rb              data.buttons[5]==1
+    #lt              data.axes[2] 
+    #rt              data.axes[5]
+    #lAnalog(x, y)   data.axes[1], data.axes[0]
+    #rAnalog(x, y)   data.axes[3], data.axes[4]
+    #left and right  data.axes[6]         
+    #up and down     data.axes[7]       
+
     #No action unless rb is held (safety button).
     if data.buttons[5]==1:   
         move(pub,data.axes[1],data.axes[0])                                  
@@ -127,20 +151,42 @@ def callback(data):
     
 
     #Mouth
-    if data.buttons[13]==1:
-        mouth(mouth_pub, 'happy') 
+    #We now need to check for wired vs wireless controllers
+    
+    if len(data.buttons) < 12:  
+        #Wired
+        if data.axes[7]>0.5:
+            mouth(mouth_pub, 'happy') 
 
-    if data.buttons[14]==1:
-        mouth(mouth_pub, 'sad') 
+        elif data.axes[7]<-0.5:
+            mouth(mouth_pub, 'sad') 
 
-    if data.buttons[11]==1:
-        mouth(mouth_pub, 'calm') 
+        if data.axes[6]>0.5:
+            mouth(mouth_pub, 'calm') 
 
-    if data.buttons[12]==1:
-        mouth(mouth_pub, 'shocked')
+        elif data.axes[6]<-0.5:
+           mouth(mouth_pub, 'shocked')
 
-    if data.buttons[4]==1:
-        mouth(mouth_pub, 'off')
+        if data.buttons[4]==1:
+           mouth(mouth_pub, 'off')
+  
+    
+    else:    
+        #wireless
+        if data.buttons[13]==1:
+            mouth(mouth_pub, 'happy') 
+
+        if data.buttons[14]==1:
+            mouth(mouth_pub, 'sad') 
+
+        if data.buttons[11]==1:
+            mouth(mouth_pub, 'calm') 
+
+        if data.buttons[12]==1:
+           mouth(mouth_pub, 'shocked')
+
+        if data.buttons[4]==1:
+           mouth(mouth_pub, 'off')
 
 
    #Nose
@@ -155,6 +201,22 @@ def callback(data):
 
     if data.buttons[3]==1:
         nose(nose_pub, 'off')
+
+    
+    #Invert head
+    if data.buttons[10]==1 and rp_latch=='false':
+        
+        if inverted=='true':
+            inverted='false'
+            nose(nose_pub, 'blue')
+        else: 
+            inverted='true'
+            nose(nose_pub, 'green')
+        
+        rp_latch='true'
+    
+    elif not data.buttons[10]==1:
+        rp_latch='false'
 
   
 

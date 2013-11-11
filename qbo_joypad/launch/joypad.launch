@@ -3,7 +3,15 @@
 <!-- Starts the Xbox360 joypad controller for qbo  -->
 
 <launch>
-   <node name="joy" pkg="joy" type="joy_node" />
-   <node name="joypad_tester" pkg="qbo_joypad" type="joypad_tester.py" />
+   <!-- In a terminal, type "ls -l /dev/input" to find your joypad's absolute device path (usually /dev/input/js0) then enter it here as a parameter -->
+   <arg name="device" default="/dev/input/js0"/>
+
+   <node name="joy" pkg="joy" type="joy_node">
+      <param name="dev" type="string" value="$(arg device)"/>
+   </node>
+
    <node name="joypad_controller" pkg="qbo_joypad" type="joypad_controller.py"/>
+
+   <node name="joypad_tester" pkg="qbo_joypad" type="joypad_tester.py"/> 
+
 </launch>
