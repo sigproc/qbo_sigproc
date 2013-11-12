@@ -1,6 +1,6 @@
 # Simple Naviagtion Package
 	
- A package called kdl has to be installed to use this node. It handles operations using quaternions which is how the orientation of the robot is stored. Also it is not supported on hydro, so i ahd install it maually.
+ A package called kdl has to be installed to use this node. It handles operations using quaternions which is how the orientation of the robot is stored. Also it is not supported on hydro, so i had to install it manually.
  To install go to your "/cuedmasters/src" directory and run 
 
  ```console
@@ -13,7 +13,7 @@
  $ rosmake kdl
  ```
 
- 
+
  This should then install kdl and pykdl to the correct place for you to run the node.
 
 
