@@ -87,25 +87,52 @@ def callback(data):
         pygame.draw.circle(window, (100, 100, 0), (b_offsetX, b_offsetY-40), 20)  
 
 
-    if data.buttons[11]==1:
-        pygame.draw.circle(window, (255, 255, 255), (d_offsetX-40, d_offsetY), 20)   #left
-    else:
-        pygame.draw.circle(window, (100, 100, 100), (d_offsetX-40, d_offsetY), 20)    
+    #We now need to check for wired vs wireless controllers
+    if len(data.buttons) < 12:  
+        #Wired
 
-    if data.buttons[14]==1:
-        pygame.draw.circle(window, (255, 255, 255), (d_offsetX, d_offsetY+40), 20)   #down
-    else:
-        pygame.draw.circle(window, (100, 100, 100), (d_offsetX, d_offsetY+40), 20)      
+        if data.axes[6]>0.5:
+            pygame.draw.circle(window, (255, 255, 255), (d_offsetX-40, d_offsetY), 20)   #left
+        else:
+            pygame.draw.circle(window, (100, 100, 100), (d_offsetX-40, d_offsetY), 20)    
 
-    if data.buttons[12]==1:
-        pygame.draw.circle(window, (255, 255, 255), (d_offsetX+40, d_offsetY), 20)   #right
-    else:
-        pygame.draw.circle(window, (100, 100, 100), (d_offsetX+40, d_offsetY), 20)  
+        if data.axes[7]<-0.5:
+            pygame.draw.circle(window, (255, 255, 255), (d_offsetX, d_offsetY+40), 20)   #down
+        else:
+            pygame.draw.circle(window, (100, 100, 100), (d_offsetX, d_offsetY+40), 20)      
 
-    if data.buttons[13]==1:
-        pygame.draw.circle(window, (255, 255, 255), (d_offsetX, d_offsetY-40), 20) #up
-    else:
-        pygame.draw.circle(window, (100, 100, 100), (d_offsetX, d_offsetY-40), 20)
+        if data.axes[6]<-0.5:
+            pygame.draw.circle(window, (255, 255, 255), (d_offsetX+40, d_offsetY), 20)   #right
+        else:
+            pygame.draw.circle(window, (100, 100, 100), (d_offsetX+40, d_offsetY), 20)  
+
+        if data.axes[7]>0.5:
+            pygame.draw.circle(window, (255, 255, 255), (d_offsetX, d_offsetY-40), 20) #up
+        else:
+            pygame.draw.circle(window, (100, 100, 100), (d_offsetX, d_offsetY-40), 20)
+    
+    else: 
+        #wireless   
+        if data.buttons[11]==1:
+            pygame.draw.circle(window, (255, 255, 255), (d_offsetX-40, d_offsetY), 20)   #left
+        else:
+            pygame.draw.circle(window, (100, 100, 100), (d_offsetX-40, d_offsetY), 20)    
+
+        if data.buttons[14]==1:
+            pygame.draw.circle(window, (255, 255, 255), (d_offsetX, d_offsetY+40), 20)   #down
+        else:
+            pygame.draw.circle(window, (100, 100, 100), (d_offsetX, d_offsetY+40), 20)      
+
+        if data.buttons[12]==1:
+            pygame.draw.circle(window, (255, 255, 255), (d_offsetX+40, d_offsetY), 20)   #right
+        else:
+            pygame.draw.circle(window, (100, 100, 100), (d_offsetX+40, d_offsetY), 20)  
+
+        if data.buttons[13]==1:
+            pygame.draw.circle(window, (255, 255, 255), (d_offsetX, d_offsetY-40), 20) #up
+        else:
+            pygame.draw.circle(window, (100, 100, 100), (d_offsetX, d_offsetY-40), 20)
+
 
 
     if data.buttons[6]==1:
@@ -123,6 +150,7 @@ def callback(data):
     else:
         pygame.draw.circle(window, (100, 100, 100), (m_offsetX+40, m_offsetY), 10)
      
+
 
     if data.buttons[9]==1:
         pygame.draw.circle(window, (255, 255, 255), (la_offsetX-(int)(20*data.axes[0]), la_offsetY-(int)(20*data.axes[1])), 40) #lAnalog
