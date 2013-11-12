@@ -1,7 +1,7 @@
 # Q.bo USB Xbox 360 Joypad Library Package by fg295: qbo_joypad
 
-This package contains applications to control the Q.bo via Xbox 360 Joypad  
-To use:  
+This package contains applications to control the Q.bo via the Xbox 360 Joypad  
+#### To use:  
 
 First, build the package. In a terminal, navigate to the root of your catkin workspace (eg. ~/cued-masters) and type:
 ```console
@@ -38,7 +38,7 @@ $ roslaunch qbo_joypad joypad.launch device:=/dev/input/js1
 
 
 
-Controls:  
+#### Controls:  
 Hold RB + Left thumb stick controls movement  
 Right thumb stick controls head  
 Right thumb stick click toggles inverted flight controls (Nose turns green when inverted, blue when non-inverted)  
