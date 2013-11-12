@@ -1,0 +1,40 @@
+<launch>
+  <arg name="qbo_address" default="sigproc-robot1" />
+  <arg name="qbo_user" default="qbo" />
+
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find ccny_rgbd)/launch/vo+mapping.rviz" />
+
+  <!-- Initialize vo-odometry frame so that it is -->
+  <node name="vo_odom_initializer" pkg="qbo_rgbd_slam" type="vo_reference_frame_initializer.py" />
+
+  <group>
+    <machine name="qbo" address="$(arg qbo_address)" user="$(arg qbo_user)" default="true"
+      env-loader="ROS_HOSTNAME=$(arg qbo_address) ~/cued-masters/devel/env.sh" />
+
+    <!-- Start the openni driver -->
+    <include file="$(find qbo_rgbd_slam)/launch/include/ccny_openni.launch"/>
+
+    <!-- Start the visual odometry and mapping nodes -->
+    <include file="$(find qbo_rgbd_slam)/launch/include/vo+mapping.launch"/>
+
+    <!-- Start Q.bo drivers without publishing the odom tf -->
+    <node name="qbo_arduqbo" pkg="qbo_arduqbo" type="qbo_arduqbo" output="screen" respawn="true">
+      <rosparam file="$(find qbo_rgbd_slam)/launch/include/qbo_settings_for_rgbd_slam.yaml" command="load" />
+    </node>
+
+    <!-- Add in head joint odometry -->
+    <node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />
+
+    <!-- Transform between base_footprint and the head --> 
+    <node name="link" pkg="tf" type="static_transform_publisher" args="0.06 0 0.02 0 0 0 base_footprint base_link 100" />
+
+    <!-- Our camera is slightly on the skew, hence the slight roll -->
+    <node name="depth_camera" pkg="tf" type="static_transform_publisher" args="0.02 0 0.13 0 0 0.08 head camera_link_odom 100" />
+
+    <!-- Set world odom transform -->
+    <node name="world_odom_tf" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world odom 100" />
+
+
+  </group>
+</launch>
