@@ -12,7 +12,9 @@
  ```console
  $ rosmake kdl
  ```
+ This should then install kdl and pykdl to the correct place for you to run the node.
 
+ 
 
 
 
