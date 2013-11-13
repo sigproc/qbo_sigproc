@@ -18,7 +18,7 @@
     <!-- Start the visual odometry and mapping nodes -->
     <include file="$(find qbo_rgbd_slam)/launch/include/vo+mapping.launch"/>
 
-    <!-- Start Q.bo drivers without publishing the odom tf -->
+    <!-- Start Q.bo drivers -->
     <node name="qbo_arduqbo" pkg="qbo_arduqbo" type="qbo_arduqbo" output="screen" respawn="true">
       <rosparam file="$(find qbo_rgbd_slam)/launch/include/qbo_settings_for_rgbd_slam.yaml" command="load" />
     </node>
