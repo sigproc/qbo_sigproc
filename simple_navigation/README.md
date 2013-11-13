@@ -26,12 +26,13 @@
 
  startup the Qbo using qbo.launch
 
- open Rviz (using the rviz config file provided will help)
+ run 
 
- run the node nav_pose_sub_pub.py This redirects the tf transform showing where the robot is to a message of type PoseStamped
+ ```console
+ 	$ roslaunch simple_naviagtion qbo_nav.launch
+ ```
+ open Rviz 
 
- run simple_nav_node.py
- 
  In Rviz set a 2d nav goal (make sure the nav goal topic is set to /goal_pose)
  
 
