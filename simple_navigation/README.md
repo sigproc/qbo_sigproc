@@ -29,7 +29,7 @@
  run 
 
  ```console
- 	$ roslaunch simple_naviagtion qbo_nav.launch
+ 	$ roslaunch simple_navigation qbo_nav.launch
  ```
  open Rviz 
 
