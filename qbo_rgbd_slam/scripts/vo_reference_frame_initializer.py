@@ -9,7 +9,6 @@ class TransformInitializer():
         rospy.init_node('vo_initializer')
         self.listener = tf.TransformListener()
         self.transformFound = False
-        self.listener = tf.TransformListener()
         rate = rospy.Rate(10.0)
         while not rospy.is_shutdown():
             if(self.transformFound==False):

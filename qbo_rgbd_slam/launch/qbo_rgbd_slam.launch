@@ -2,11 +2,8 @@
   <arg name="qbo_address" default="sigproc-robot1" />
   <arg name="qbo_user" default="qbo" />
 
-
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find ccny_rgbd)/launch/vo+mapping.rviz" />
 
-  <!-- Initialize vo-odometry frame so that it is -->
-  <node name="vo_odom_initializer" pkg="qbo_rgbd_slam" type="vo_reference_frame_initializer.py" />
 
   <group>
     <machine name="qbo" address="$(arg qbo_address)" user="$(arg qbo_user)" default="true"
@@ -22,6 +19,12 @@
     <node name="qbo_arduqbo" pkg="qbo_arduqbo" type="qbo_arduqbo" output="screen" respawn="true">
       <rosparam file="$(find qbo_rgbd_slam)/launch/include/qbo_settings_for_rgbd_slam.yaml" command="load" />
     </node>
+
+    <!-- Initialize vo-odometry frame so that it is located where the camera is located relative to the base -->
+    <node name="vo_odom_initializer" pkg="qbo_rgbd_slam" type="vo_reference_frame_initializer.py" />
+
+    <!-- Publish camera_link to base_link_vo transform -->
+    <node name="base_link_vo_to_camera_link" pkg="qbo_rgbd_slam" type="camera_to_baselink.py" />
 
     <!-- Add in head joint odometry -->
     <node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />
