@@ -12,4 +12,6 @@
 
    <node name="joypad_controller" pkg="qbo_joypad" type="joypad_controller.py"/>
 
+   <node name="joypad_tester" pkg="qbo_joypad" type="joypad_tester.py"/> 
+
 </launch>
