@@ -36,6 +36,11 @@ So if for example your device was 'js1', you would type:
 $ roslaunch qbo_joypad joypad.launch device:=/dev/input/js1
 ```  
 
+To launch the application with the joypad tester enabled (for debugging purposes), instead type:
+```console
+$ roslaunch qbo_joypad joypad_gui.launch
+```  
+
 
 
 #### Controls:  
