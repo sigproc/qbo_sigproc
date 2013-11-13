@@ -123,24 +123,17 @@ def main(args):
 	snn = simple_nav_node()
 	rospy.init_node('simple_nav_node', anonymous=True)
 	
+	while (not rospy.is_shutdown()):
 
-	try: 
-		rospy.loginfo("0.1")
 		while (snn.current_pose == None):
 			rospy.loginfo("Waiting for Pose")
 		while (snn.goal_pose == None):
 			rospy.loginfo("Waiting for Goal")
 			
-		
 		snn.navigate()
-	
-	except KeyboardInterrupt:
-		print "Shutting down"
 
-	try:
-		rospy.spin()
-	except KeyboardInterrupt:
-		print "Shutting down"
+		
+
 
 
 if __name__ == '__main__':

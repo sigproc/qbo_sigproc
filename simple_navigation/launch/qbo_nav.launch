@@ -1,0 +1,7 @@
+<!-- Starts the nodes to allow the qbo to navigate from point to point-->
+
+<launch>
+	<node name="nav_node" pkg="simple_navigation" type="simple_nav_node.py" />
+	<node name="tf_remapper" pkg="simple_navigation" type="nav_pose_sub_pub.py" />
+
+</launch>
