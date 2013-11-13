@@ -53,6 +53,8 @@ disable certain features. The default is always ``false``.
 
 **face**: (EXPERIMENTAL) if ``true``, bring up face tracking and following
 
+**joypad**: if ``true``, enable wirless xbox 360 joypad control
+
 ### Camera parameters
 
 **mono\_camera\_side**: default ``left``, possible values are ``left`` or
