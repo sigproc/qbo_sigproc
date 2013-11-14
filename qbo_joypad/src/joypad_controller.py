@@ -136,7 +136,7 @@ def callback(data):
 
     #No action unless rb is held (safety button).
     if data.buttons[5]==1:   
-        move(pub,data.axes[1],data.axes[0])                                  
+        move(pub,data.axes[1]*0.5,data.axes[0])                                  
         
     #if rb is released, stop the robot
     else:
