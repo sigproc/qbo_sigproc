@@ -1,0 +1,6 @@
+To run the simulation of using openni to create its default topics from only the raw data, run
+
+source openni_sim.bash
+
+This will set the time params and then call openni_sim.launch, a launch file to launch openni without the drivers,
+to launch the bag file in ../bagfiles/raw.bag and the node seg_color, to demonstrate segmentation.
