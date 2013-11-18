@@ -1,4 +1,14 @@
-To run the simulation of using openni to create its default topics from only the raw data, run
+Although a bash file exists, as you may wish to supply your own path to your own bagfile, I suggest copying the bash file into your
+terminal with the following addition where <bag_path> is the path to your bagfile. Bagfiles should contain:
+/camera/depth/image_raw
+/camera/rgb/image_raw
+
+at the minimum.
+
+$rosparam set /use_sim_time true
+$roslaunch seg_depth openni_sim.launch bag_paht:=<bag_path>
+
+Alternatively you can change the default bag path in the launch file and just run the bash file.
 
 source openni_sim.bash
 
