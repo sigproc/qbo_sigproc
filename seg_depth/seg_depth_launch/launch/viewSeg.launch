@@ -1,0 +1,8 @@
+<!-- Launch file for running the qbo_sigproc_launch file with the segmentation node and image_view node-->
+<launch>
+   <include file="$(find qbo_sigproc_launch)/launch/qbo.launch">
+        <arg depth_camera="true"/>
+      </include>
+
+
+</launch>

@@ -1,0 +1,12 @@
+<launch>
+
+	 <arg name="bag_path" default="/home/sam/cued-masters/bagfiles/raws.bag" />
+
+      <include file="$(find openni_launch)/launch/openni.launch">
+        <arg name="load_driver" value="false"/>
+      </include>
+
+	<node pkg="rosbag" type="play" name="rosbag" output="screen" args="-l $(arg bag_path)"/>
+	<node pkg="seg_depth" type = "seg_color" name="seg_color"/>
+
+</launch>
