@@ -1,0 +1,33 @@
+<launch>
+  <arg name="qbo_address" default="sigproc-robot1" />
+  <arg name="qbo_user" default="qbo" />
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find ccny_rgbd)/launch/vo+mapping.rviz" />
+
+
+  <group>
+    <machine name="qbo" address="$(arg qbo_address)" user="$(arg qbo_user)" default="true"
+      env-loader="ROS_HOSTNAME=$(arg qbo_address) ~/cued-masters/devel/env.sh" />
+
+    <!-- Start the openni driver -->
+    <include file="$(find qbo_rgbd_slam)/launch/include/ccny_openni.launch"/>
+
+    <!-- Start the visual odometry and mapping nodes -->
+    <include file="$(find qbo_rgbd_slam)/launch/include/vo+mapping.launch">
+      <arg name="pub_tf" value="true" />
+      <arg name="fixed_frame" value="odom"/>
+    </include>
+
+    <!-- Start the joypay controller -->
+    <group>
+      <node name="joypad" pkg="joy" type="joy_node"/>
+      <node name="joypad_controller" pkg="qbo_joypad" type="joypad_controller.py" />
+    </group>
+
+    <!-- Start Q.bo drivers -->
+    <node name="qbo_arduqbo" pkg="qbo_arduqbo" type="qbo_arduqbo" output="screen" respawn="true">
+      <rosparam file="$(find qbo_rgbd_slam)/launch/include/qbo_settings_no_tf.yaml" command="load" />
+    </node>
+
+  </group>
+</launch>

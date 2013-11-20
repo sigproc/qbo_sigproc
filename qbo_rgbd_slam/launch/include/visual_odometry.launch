@@ -8,6 +8,12 @@
   # ICPProbModel
   <arg name="reg_type" default="ICPProbModel"/> 
 
+  <arg name="motion_constraint" default="2"/>
+
+  <arg name="pub_tf" default="false" />
+
+  <arg name="fixed_frame" default="vo" />
+
   <node pkg="ccny_rgbd" type="visual_odometry_node" name="visual_odometry_node" 
     output="screen">
     
@@ -27,10 +33,10 @@
     
     #### frames and tf output #########################
     
-    <param name="publish_tf"  value="false"/>
+    <param name="publish_tf"  value="$(arg pub_tf)"/>
     <param name="publish_odom"  value="true"/>
     <param name="publish_path"  value="true"/>
-    <param name="fixed_frame" value="vo"/>
+    <param name="fixed_frame" value="$(arg fixed_frame)"/>
     <param name="base_frame"  value="camera_link"/>
        
     #### features #####################################
@@ -40,8 +46,8 @@
     <param name="feature/smooth"                      value="0"/>
     <param name="feature/max_range"                   value="7.0"/>
     <param name="feature/max_stdev"                   value="0.05"/>
-    <param name="feature/show_keypoints"              value="false"/>
-    <param name="feature/publish_feature_cloud"       value="true"/>
+    <param name="feature/show_keypoints"              value="true"/>
+    <param name="feature/publish_feature_cloud"       value="false"/>
     <param name="feature/publish_feature_covariances" value="false"/>
 
     #### features: GFT ################################
@@ -61,16 +67,16 @@
     #### registration #################################
 
     <param name="reg/reg_type"          value="$(arg reg_type)"/>
-    <param name="reg/motion_constraint" value="0"/>
+    <param name="reg/motion_constraint" value="$(arg motion_constraint)"/>
 
     #### registration: ICP Prob Model #################
 
     <param name="reg/ICPProbModel/max_iterations"            value="10"/>
-    <param name="reg/ICPProbModel/max_model_size"            value="5000"/>
+    <param name="reg/ICPProbModel/max_model_size"            value="10000"/>
     <param name="reg/ICPProbModel/n_nearest_neighbors"       value="4"/>
     <param name="reg/ICPProbModel/max_assoc_dist_mah"        value="10.0"/>
     <param name="reg/ICPProbModel/max_corresp_dist_eucl"     value="0.15"/>
-    <param name="reg/ICPProbModel/publish_model_cloud"       value="true"/>
+    <param name="reg/ICPProbModel/publish_model_cloud"       value="false"/>
     <param name="reg/ICPProbModel/publish_model_covariances" value="false"/>
   </node>
     
