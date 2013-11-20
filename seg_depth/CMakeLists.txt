@@ -108,8 +108,12 @@ target_link_libraries(seg_humanDud ${catkin_LIBRARIES})
 add_executable(seg_human src/seg_human.cpp)
 target_link_libraries(seg_human ${catkin_LIBRARIES})
 
-add_executable(seg_color src/seg_color.cpp src/segment_rgb/segment.cpp src/segment_rgb/segment-image.h src/segment_rgb/segment-graph.h src/segment_rgb/disjoint-set.h)
+add_executable(seg_color_file src/seg_color_file.cpp src/segment_rgb_file/segment.cpp src/segment_rgb_file/segment-image.h src/segment_rgb_file/segment-graph.h src/segment_rgb_file/disjoint-set.h)
+target_link_libraries(seg_color_file ${catkin_LIBRARIES})
+
+add_executable(seg_color src/seg_color.cpp src/segment_rgb_fast/segment.cpp src/segment_rgb_fast/segment-image.h src/segment_rgb_fast/segment-graph.h src/segment_rgb_fast/disjoint-set.h)
 target_link_libraries(seg_color ${catkin_LIBRARIES})
+
 
 #add_executable(seg_depth src/seg_depth.cpp src/segment_depth/segment.cpp src/segment_depth/segment-image.h src/segment_depth/segment-graph.h src/segment_depth/disjoint-set.h)
 #target_link_libraries(seg_depth ${catkin_LIBRARIES})
