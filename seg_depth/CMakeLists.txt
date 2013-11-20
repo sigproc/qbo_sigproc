@@ -117,6 +117,9 @@ target_link_libraries(seg_color_file ${catkin_LIBRARIES})
 add_executable(seg_color_fast src/seg_color_fast.cpp src/segment_rgb_fast/segment.cpp src/segment_rgb_fast/segment-image.h src/segment_rgb_fast/segment-graph.h src/segment_rgb_fast/disjoint-set.h src/segment_rgb_fast/pnmfile.h)
 target_link_libraries(seg_color_fast ${catkin_LIBRARIES})
 
+add_executable(seg_depth src/seg_depth.cpp)
+target_link_libraries(seg_depth ${catkin_LIBRARIES})
+
 
 #add_executable(seg_depth src/seg_depth.cpp src/segment_depth/segment.cpp src/segment_depth/segment-image.h src/segment_depth/segment-graph.h src/segment_depth/disjoint-set.h)
 #target_link_libraries(seg_depth ${catkin_LIBRARIES})
