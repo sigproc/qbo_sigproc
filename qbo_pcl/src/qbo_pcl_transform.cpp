@@ -16,11 +16,12 @@ Publishes the transformed point cloud on the "camera/depth/transformed_points" t
 class Transformer
 {
 public:
-	Transformer(std::string target_frame="/odom",std::string source_pc_topic="camera/depth/points", std::string target_pc_topic="camera/depth/transformed_points")
+	Transformer(const ros::NodeHandle& nh, 
+                   const ros::NodeHandle& nh_private):
+	_nh(nh),
+	_nh_private(nh_private)
 	{
-		_target_frame = target_frame;
-		_sub = _node.subscribe(source_pc_topic, 1, &Transformer::transformAndPublishPC,this);
-		_pub = _node.advertise<sensor_msgs::PointCloud2> (target_pc_topic,1);
+		initParams();
 		ROS_INFO("Transformer initialized");
 	}
 	~Transformer(){
@@ -29,12 +30,35 @@ public:
 	void transformAndPublishPC(const sensor_msgs::PointCloud2&);
 
 private:
+	void initParams(void);
 	std::string _target_frame;
-	ros::NodeHandle _node;
 	ros::Publisher _pub; 
 	tf::TransformListener _transform_listener;
 	ros::Subscriber _sub;
+	ros::NodeHandle _nh;                ///< the public nodehandle
+    ros::NodeHandle _nh_private;        ///< the private nodehandle
 };
+
+void Transformer::initParams(void){
+	std::string input_topic;
+	std::string output_topic;
+
+	if (!_nh_private.getParam ("target_frame", _target_frame)){
+	    _target_frame = "/odom";
+		ROS_WARN("Need to set target frame argument! Setting target frame to /odom");
+	}
+	if (!_nh_private.getParam ("input_topic", input_topic)){
+	    input_topic = "/camera/depth/points";
+	    ROS_WARN("Need to set input_topic argument! Setting input_topic to /camera/depth/points");
+	}
+	if (!_nh_private.getParam ("output_topic", output_topic))
+	{
+		output_topic = "/camera/depth/transformed_points";	
+		ROS_WARN("Need to set output_topic argument! Setting input_topic to /camera/depth/transformed_points");
+	}
+	_sub = _nh.subscribe(input_topic, 1, &Transformer::transformAndPublishPC,this);
+	_pub = _nh.advertise<sensor_msgs::PointCloud2> (output_topic,1);
+}
 
 void Transformer::transformAndPublishPC(const sensor_msgs::PointCloud2 &inputCloud){
 	ROS_INFO("Transforming PC");
@@ -56,7 +80,10 @@ int main(int argc, char **argv)
 {
 	ros::init(argc,argv, "pointcloud_transformer");
 
-	Transformer myTransformer;
+  	ros::NodeHandle nh;
+  	ros::NodeHandle nh_private("~");
+	Transformer myTransformer(nh,nh_private);
 
 	ros::spin();
+	return 0;
 }

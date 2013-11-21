@@ -1,0 +1,25 @@
+<launch>
+
+  <arg name="bag" default="/home/dancecommander/Downloads/rgbd.bag"/>
+  <node pkg="rosbag" type="play" name="rosbag" args="$(arg bag) --clock" />
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find ccny_rgbd)/launch/vo+mapping.rviz" />
+
+    <include file="$(find qbo_rgbd_slam)/launch/include/vo+mapping.launch">
+      <arg name="pub_tf" value="true" />
+      <arg name="fixed_frame" value="odom"/>
+      <arg name="motion_constraint" value="0"/>
+    </include>
+
+  <!-- static transforms -->
+  <arg name="pi/2" value="1.5707963267948966" />
+  <arg name="optical_rotate" value="0 0 0 -$(arg pi/2) 0 -$(arg pi/2)" />
+
+  <node pkg="tf" type="static_transform_publisher" name="camera_rgb_frame_tf"
+        args="0 -0.045 0 0 0 0  /camera_link /camera_rgb_frame 40" />        
+
+  <node pkg="tf" type="static_transform_publisher" name="camera_rgb_optical_frame_tf"
+        args="$(arg optical_rotate) /camera_rgb_frame /camera_rgb_optical_frame 40" /> 
+
+
+</launch>

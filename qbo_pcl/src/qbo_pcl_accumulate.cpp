@@ -15,24 +15,48 @@
 class Accumulator
 {
 public:
-	Accumulator()
-	:_accumulated_points_ptr(new pcl::PointCloud<pcl::PointXYZ>)
+	Accumulator(const ros::NodeHandle& nh, 
+                   const ros::NodeHandle& nh_private):
+  	_nh(nh),
+  	_nh_private(nh_private),
+	_accumulated_points_ptr(new pcl::PointCloud<pcl::PointXYZ>)
 	{
-		_sub = _node.subscribe("camera/depth/transformed_points", 1, &Accumulator::accumulate_pc,this);
-		_pub = _node.advertise<sensor_msgs::PointCloud2> ("map/point_cloud",1);
+		initParams();
+		_sub = _nh.subscribe(_input_topic, 1, &Accumulator::accumulate_pc,this);
+		_pub = _nh.advertise<sensor_msgs::PointCloud2> (_output_topic,1);
 		ROS_INFO("Accumulator initialized");
 	}
 
 	~Accumulator(){}
 
 private:
+	void initParams(void);
 	void accumulate_pc(const sensor_msgs::PointCloud2 &ros_pc);
 	ros::Subscriber _sub;
-	ros::NodeHandle _node;
+	ros::NodeHandle _nh;                ///< the public nodehandle
+ 	ros::NodeHandle _nh_private;        ///< the private nodehandle
 	pcl::PointCloud<pcl::PointXYZ>::Ptr _accumulated_points_ptr;
 	ros::Publisher _pub;
-
+	std::string _input_topic;
+  	std::string _output_topic;
+  	double _leaf_size;
 };
+
+void Accumulator::initParams(void){
+  if (!_nh_private.getParam ("leaf_size", _leaf_size)){
+    _leaf_size=0.05;
+    ROS_WARN("Need to set voxel grid leaf_size argument! Setting leaf size to 0.05");
+  }
+  if (!_nh_private.getParam ("input_topic", _input_topic)){
+      _input_topic = "camera/depth/transformed_points";
+      ROS_WARN("Need to set input_topic argument! Setting input_topic to camera/depth/transformed_points");
+  }
+  if (!_nh_private.getParam ("output_topic", _output_topic))
+  {
+    _output_topic = "map/point_cloud";  
+    ROS_WARN("Need to set output_topic argument! Setting input_topic to map/point_cloud");
+  }
+}
 
 void Accumulator::accumulate_pc(const sensor_msgs::PointCloud2 &ros_pc){
 
@@ -50,7 +74,7 @@ void Accumulator::accumulate_pc(const sensor_msgs::PointCloud2 &ros_pc){
 
   	pcl::VoxelGrid<pcl::PointXYZ> sor;
   	sor.setInputCloud (_accumulated_points_ptr);
-  	sor.setLeafSize (0.05f, 0.05f, 0.05f);
+  	sor.setLeafSize (_leaf_size, _leaf_size, _leaf_size);
   	pcl::PointCloud<pcl::PointXYZ> temp;
   	sor.filter(temp);
 
@@ -78,7 +102,10 @@ void Accumulator::accumulate_pc(const sensor_msgs::PointCloud2 &ros_pc){
 int main(int argc, char **argv){
 	ros::init(argc,argv, "point_cloud_accumulator");
 
-	Accumulator myAccumulator;
+	ros::NodeHandle nh;
+  	ros::NodeHandle nh_private("~");
+
+	Accumulator myAccumulator(nh,nh_private);
 
 	ros::spin();
 }

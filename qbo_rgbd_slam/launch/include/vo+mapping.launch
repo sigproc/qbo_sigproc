@@ -17,9 +17,13 @@
   # Fixed frame
   <arg name="fixed_frame" default="vo" />
 
+  # Motion constraint
+  <arg name="motion_constraint" default="2" />
+
   
   <include file="$(find qbo_rgbd_slam)/launch/include/visual_odometry.launch">
     <arg name="detector_type" value="$(arg detector_type)"/>
+    <arg name="motion_constraint" value="$(arg motion_constraint)"/>
     <arg name="reg_type"      value="$(arg reg_type)"/>
     <arg name="pub_tf" value="$(arg pub_tf)" />
     <arg name="fixed_frame" value="$(arg fixed_frame)" />
