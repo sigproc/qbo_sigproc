@@ -95,6 +95,8 @@ void Transformer::transformAndPublishPC(const sensor_msgs::PointCloud2 &inputClo
     pcl_conversions::fromPCL(tmp_pc, published_pc);
 
 	//Publish transformed cloud here
+	published_pc.header = inputCloud.header;
+	published_pc.header.frame_id = _target_frame;
 	std::cout << published_pc.header.frame_id << std::endl;
 	_pub.publish(published_pc);
 }
