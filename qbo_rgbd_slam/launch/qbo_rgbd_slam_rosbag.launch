@@ -1,0 +1,24 @@
+<launch>
+
+  <arg name="bag" default="/home/dancecommander/Downloads/RobotCorridorTest.bag"/>
+  <node pkg="rosbag" type="play" name="rosbag" args="-q -l $(arg bag)" />
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find ccny_rgbd)/launch/vo+mapping.rviz" />
+
+    <include file="$(find qbo_rgbd_slam)/launch/include/vo+mapping.launch">
+      <arg name="pub_tf" value="false" />
+      <arg name="fixed_frame" value="vo"/>
+    </include>
+
+      <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
+      <param name="output_frame" value="odom"/>
+      <param name="freq" value="30.0"/>
+      <param name="sensor_timeout" value="1.0"/>
+      <param name="odom_used" value="true"/>
+      <param name="imu_used" value="false"/>
+      <param name="vo_used" value="true"/>
+      <param name="debug" value="false"/>
+      <param name="self_diagnose" value="false"/>
+    </node>
+
+</launch>
