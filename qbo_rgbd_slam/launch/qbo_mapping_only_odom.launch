@@ -28,17 +28,15 @@
     <!-- Add in head joint odometry -->
     <node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />
 
-    <!-- Transform between base_footprint and the head --> 
-    <node name="link" pkg="tf" type="static_transform_publisher" args="0.06 0 0.02 0 0 0 base_footprint base_link 100" />
-
-    <!-- Our camera is slightly on the skew, hence the slight roll -->
-    <node name="depth_camera" pkg="tf" type="static_transform_publisher" args="0.02 0 0.13 0 0 0.04 head camera_link 100" />
+    <!-- Decimator node -->
+    <node name="decimator_node" pkg="qbo_pcl" type="qbo_pcl_decimator" args="_input_topic:=/camera/depth/points _output_topic:=/camera/depth/decimated_points"/>
 
     <!-- Accumulator node -->
-    <node name="accumulator_node" pkg="qbo_pcl" type="qbo_pcl_accumulate" args="_leaf_size=0.1 _input_topic=/camera/depth/transformed_points _output_topic=/map/point_cloud"/>
+    <node name="accumulator_node" pkg="qbo_pcl" type="qbo_pcl_accumulate" args="_leaf_size:=0.3 _input_topic:=/camera/depth/transformed_points _output_topic:=/map/point_cloud"/>
 
     <!-- Transformer node -->
-    <node name="transformer_node" pkg="qbo_pcl" type="qbo_pcl_transform" args="_target_frame:=/odom _input_topic:=/camera/depth/points _output_topic=/camera/depth/transformed_points"/>
+    <node name="transformer_node" pkg="qbo_pcl" type="qbo_pcl_transform" args="_target_frame:=/odom _input_topic:=/camera/depth/decimated_points _output_topic:=/camera/depth/transformed_points"/>
+    
 
   </group>
 </launch>

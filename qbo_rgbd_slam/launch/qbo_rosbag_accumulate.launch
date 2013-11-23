@@ -1,0 +1,18 @@
+<launch>
+  <param name="/use_sim_time" value="true"/>
+  <arg name="bag" default="/home/dancecommander/cued-masters/Documents/accum_decimated.bag"/>
+  <node pkg="rosbag" type="play" name="rosbag" args="$(arg bag) --clock -r 2" />
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find qbo_rgbd_slam)/launch/pc_map.rviz" />
+
+    <!-- Decimator node -->
+    <node name="decimator_node" pkg="qbo_pcl" type="qbo_pcl_decimator" args="_input_topic:=/camera/depth/points _output_topic:=/camera/depth/decimated_points"/>
+
+    <!-- Accumulator node -->
+    <node name="accumulator_node" pkg="qbo_pcl" type="qbo_pcl_accumulate" args="_leaf_size:=0.05 _input_topic:=/camera/depth/transformed_points _output_topic:=/map/point_cloud"/>
+
+    <!-- Transformer node -->
+    <node name="transformer_node" pkg="qbo_pcl" type="qbo_pcl_transform" args="_target_frame:=/odom _input_topic:=/camera/depth/decimated_points _output_topic:=/camera/depth/transformed_points"/>
+
+
+</launch>
