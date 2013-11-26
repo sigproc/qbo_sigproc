@@ -37,25 +37,12 @@ rgb random_rgb(){
   return c;
 }
 
-//random depth
-uchar random_d(){
-	uchar d;
-	d = (uchar)random();
-	return d;
-}
-
 // dissimilarity measure between pixels
 static inline float diff(image<float> *r, image<float> *g, image<float> *b,
 			 int x1, int y1, int x2, int y2) {
   return sqrt(square(imRef(r, x1, y1)-imRef(r, x2, y2)) +
 	      square(imRef(g, x1, y1)-imRef(g, x2, y2)) +
 	      square(imRef(b, x1, y1)-imRef(b, x2, y2)));
-}
-
-// dissimilarity measure between pixels of 1d image
-static inline float diff1(image<float> *d,
-			 int x1, int y1, int x2, int y2) {
-  return sqrt(square(imRef(d, x1, y1)-imRef(d, x2, y2)));
 }
 
 /*
@@ -150,105 +137,6 @@ image<rgb> *segment_image(image<rgb> *im, float sigma, float c, int min_size,
   rgb *colors = new rgb[width*height];
   for (int i = 0; i < width*height; i++)
     colors[i] = random_rgb();
-  
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      int comp = u->find(y * width + x);
-      imRef(output, x, y) = colors[comp];
-    }
-  }  
-
-  delete [] colors;  
-  delete u;
-
-  return output;
-}
-
-/*
- * Segment a 1D image
- *
- * Returns a graysale image representing the segmentation.
-
- *
- * im: image to segment.
- * sigma: to smooth the image.
- * c: constant for treshold function.
-
- * min_size: minimum component size (enforced by post-processing stage).
- * num_ccs: number of connected components in the segmentation.
- */
-image<uchar> *segment_image1(image<uchar> *im, float sigma, float c, int min_size,
-			  int *num_ccs) {
-  int width = im->width();
-  int height = im->height();
-
-  image<float> *d = new image<float>(width, height);
-
-  // smooth
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      imRef(d, x, y) = imRef(im, x, y);
-    }
-  }
-  image<float> *smooth_d = smooth(d, sigma);
- 
-  delete d;
- 
-  // build graph
-  edge *edges = new edge[width*height*4];
-  int num = 0;
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      if (x < width-1) {
-	edges[num].a = y * width + x;
-	edges[num].b = y * width + (x+1);
-	edges[num].w = diff1(smooth_d, x, y, x+1, y);
-	num++;
-      }
-
-      if (y < height-1) {
-	edges[num].a = y * width + x;
-	edges[num].b = (y+1) * width + x;
-	edges[num].w = diff1(smooth_d, x, y, x, y+1);
-	num++;
-      }
-
-      if ((x < width-1) && (y < height-1)) {
-	edges[num].a = y * width + x;
-	edges[num].b = (y+1) * width + (x+1);
-	edges[num].w = diff1(smooth_d, x, y, x+1, y+1);
-	num++;
-      }
-
-      if ((x < width-1) && (y > 0)) {
-	edges[num].a = y * width + x;
-	edges[num].b = (y-1) * width + (x+1);
-	edges[num].w = diff1(smooth_d, x, y, x+1, y-1);
-	num++;
-      }
-    }
-  }
-  delete smooth_d;
-
-  // segment
-  universe *u = segment_graph(width*height, num, edges, c);
-  
-  // post process small components
-  for (int i = 0; i < num; i++) {
-    int a = u->find(edges[i].a);
-    int b = u->find(edges[i].b);
-    if ((a != b) && ((u->size(a) < min_size) || (u->size(b) < min_size)))
-      u->join(a, b);
-  }
-  delete [] edges;
-  *num_ccs = u->num_sets();
-
-  image<uchar> *output = new image<uchar>(width, height);
-
-  // pick random colors for each component
-  uchar *colors = new uchar[width*height];
-  for (int i = 0; i < width*height; i++)
-    colors[i] = random_d();
   
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {

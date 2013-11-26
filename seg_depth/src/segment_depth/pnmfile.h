@@ -168,48 +168,14 @@ static image<rgb> *loadPPM(const char *name) {
 
   return im;
 }
-//created for 1D image read
-static image<double> *loadPPMd(const char *name) {
-  char buf[BUF_SIZE], doc[BUF_SIZE];
-  
-  /* read header */
-  std::ifstream file(name, std::ios::in | std::ios::binary);
-  pnm_read(file, buf);
-  if (strncmp(buf, "P6", 2))
-    throw pnm_error();
 
-  pnm_read(file, buf);
-  int width = atoi(buf);
-  pnm_read(file, buf);
-  int height = atoi(buf);
-
-  pnm_read(file, buf);
-  if (atoi(buf) > UCHAR_MAX)
-    throw pnm_error();
-
-  /* read data */
-  image<double> *im = new image<double>(width, height);
-  file.read((char *)imPtr(im, 0, 0), width * height * sizeof(double));
-
-  return im;
-}
-
-static void savePPMd(image<double> *im, const char *name) {
+static void savePPM(image<rgb> *im, const char *name) {
   int width = im->width();
   int height = im->height();
   std::ofstream file(name, std::ios::out | std::ios::binary);
 
   file << "P6\n" << width << " " << height << "\n" << UCHAR_MAX << "\n";
   file.write((char *)imPtr(im, 0, 0), width * height * sizeof(rgb));
-}
-
-static void savePPM(image<double> *im, const char *name) {
-  int width = im->width();
-  int height = im->height();
-  std::ofstream file(name, std::ios::out | std::ios::binary);
-
-  file << "P6\n" << width << " " << height << "\n" << UCHAR_MAX << "\n";
-  file.write((char *)imPtr(im, 0, 0), width * height * sizeof(double));
 }
 
 template <class T>
