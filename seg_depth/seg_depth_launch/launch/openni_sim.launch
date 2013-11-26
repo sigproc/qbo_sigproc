@@ -7,6 +7,6 @@
       </include>
 
 	<node pkg="rosbag" type="play" name="rosbag" output="screen" args="-l $(arg bag_path)"/>
-	<node pkg="seg_depth" type = "seg_color_file" name="seg_color_file"/>
+	<node pkg="seg_depth" type = "seg_depth" name="seg_depth"/>
 
 </launch>

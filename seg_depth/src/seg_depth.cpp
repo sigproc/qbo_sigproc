@@ -16,15 +16,6 @@ static const char WINDOW[] = "Image Processed";
  
 //prototype
 int segment(float sigma, float k, int min_size, cv::Mat image);
-/*static void savePPM(image<rgb> *im, const char *name) {
-  int width = im->width();
-  int height = im->height();
-  std::ofstream file(name, std::ios::out | std::ios::binary);
-
-  file << "P6\n" << width << " " << height << "\n" << UCHAR_MAX << "\n";
-  file.write((char *)imPtr(im, 0, 0), width * height * sizeof(rgb));
-}*/
-
 
 //Use method of ImageTransport to create image publisher
 image_transport::Publisher pub;
@@ -32,26 +23,27 @@ image_transport::Publisher pub;
 //This function is called everytime a new image is published
 void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 {
-    cv_bridge::CvImagePtr cv_ptr;
+    cv_bridge::CvImagePtr in_msg;
+
     try
     {
-        cv_ptr = cv_bridge::toCvCopy(original_image);
+        in_msg = cv_bridge::toCvCopy(original_image);
     }
     catch (cv_bridge::Exception& e)
     {
         //if there is an error during conversion, display it
-        ROS_ERROR("tutorialROSOpenCV::main.cpp::cv_bridge exception: %s", e.what());
+        ROS_ERROR("ROSOpenCV::main.cpp::cv_bridge exception: %s", e.what());
         return;
     }
  
 	//get the image into a known format and display
     double minval, maxval;
-    cv::minMaxIdx(cv_ptr->image, &minval, &maxval);
+    cv::minMaxIdx(in_msg->image, &minval, &maxval);
     std::cout << "Minval: " << minval << std::endl;
     std::cout << "Maxval: " << maxval << std::endl;
 
     //cv::Mat *output_Im = new cv::Mat();
-    cv_ptr->image.convertTo(cv_ptr->image, CV_8UC1,255.0/maxval);
+    in_msg->image.convertTo(in_msg->image, CV_8UC1,255.0/maxval);
 
 	
 	//IMAGE CAN BE VIEWD HERE
@@ -65,8 +57,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 
 	//params for conversion
 	int width, height;
-	width = cv_ptr->image.size().width;
-	height = cv_ptr->image.size().height;
+	width = in_msg->image.size().width;
+	height = in_msg->image.size().height;
 	uchar rval = 0, gval=0, bval=0;
 
 	//direct conversion from Mat to image<rgb>
@@ -77,7 +69,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 	for (int y=0; y < height; y++){
 		for(int x=0; x<width; x++){
 			//get values from
-			uchar intensity = cv_ptr->image.at<uchar>(y,x);
+			uchar intensity = in_msg->image.at<uchar>(y,x);
 			rval = intensity;
 			gval = intensity;
 			bval = intensity;
@@ -93,44 +85,42 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 	outputIm = segment_image(inputIm, sigma, k, min_size, &num_ccs);
 
 	//create RGB Mat
-	cv::Mat OutputBGRMat = cv::Mat::zeros(cv_ptr->image.size(),CV_8UC3);
+	cv::Mat OutputBGRMat = cv::Mat::zeros(in_msg->image.size(),CV_8UC3);
+	//cv::Mat OutputGrayMat = cv::Mat::zeros(in_msg->image.size(),CV_8UC1);
 
-	//IMAGE CAN BE VIEWD HERE
-   	
-	//replace data in message
-    //Go through all the rows
-    for(int y=0; y<cv_ptr->image.rows; y++)
-    {
-        //Go through all the columns
-        for(int x=0; x<cv_ptr->image.cols; x++)
-        {
-            //assume red is 2
-			cv_ptr->image.at<uchar>(y,x) = imRef(outputIm,x,y).r;
+	 cv::Mat_<cv::Vec3b> _OutputBGRMat = OutputBGRMat;
 
-			//assume red is 2
-			OutputBGRMat.data[y*cv_ptr->image.rows*4+x*3 + 2] = imRef(outputIm,x,y).r;
-			//green is 1
-			OutputBGRMat.data[y*cv_ptr->image.rows*4+x*3 + 1] = imRef(outputIm,x,y).g;
-			//blue is 0
-			OutputBGRMat.data[y*cv_ptr->image.rows*4+x*3 + 0] = imRef(outputIm,x,y).b;
-
-			
+     for( int y = 0; y < OutputBGRMat.rows; ++y)
+        for( int x = 0; x < OutputBGRMat.cols; ++x )
+           {
+               _OutputBGRMat(y,x)[0] = imRef(outputIm,x,y).b;
+               _OutputBGRMat(y,x)[1] = imRef(outputIm,x,y).g;
+               _OutputBGRMat(y,x)[2] = imRef(outputIm,x,y).r;
         }
-    }
+
+      OutputBGRMat= _OutputBGRMat;
+
 
 	//now convert OutputMat to grayscale
-	cv::cvtColor(OutputBGRMat, cv_ptr->image, CV_BGR2GRAY);
+	//cv::cvtColor(OutputBGRMat, OutputGrayMat, CV_BGR2GRAY);
+	cv::cvtColor(OutputBGRMat, in_msg->image, CV_BGR2GRAY);
  
     //Display the image using OpenCV
-    cv::imshow(WINDOW, cv_ptr->image);
+    cv::imshow(WINDOW, in_msg->image);
 
     cv::waitKey(3);
 
+	cv_bridge::CvImage out_msg;
+	out_msg = cv_bridge::CvImage(in_msg->header, sensor_msgs::image_encodings::BGR8, OutputBGRMat);
+	//out_msg.header   = in_msg->header; // Same timestamp and tf frame as input image
+	//out_msg.encoding = sensor_msgs::image_encodings::BGR8; // Or whatever
+	//out_msg.image    = OutputBGRMat; // Your cv::Mat*/
 
+	
 	
 
 
-    pub.publish(cv_ptr->toImageMsg());
+    pub.publish(out_msg.toImageMsg());
 }
 
  
@@ -150,58 +140,11 @@ int main(int argc, char **argv)
         image_transport::Subscriber sub = it.subscribe("/camera/depth/image", 1, imageCallback);
     //OpenCV HighGUI call to destroy a display window on shut-down.
     cv::destroyWindow(WINDOW);
-        pub = it.advertise("/camera/depth/human_segmentation", 1);
+        pub = it.advertise("/camera/depth/segmented", 1);
         ros::spin();
     //ROS_INFO is the replacement for printf/cout.
     ROS_INFO("tutorialROSOpenCV::main.cpp::No error.");
  
 }
 
-//OLD UNSUCCESSFUL BODY
-/*const char* filename = "tmpIm.ppm";
-	float sigma = 0.5;
-	float k = 500;
-	int min_size = 20;
 
-	//params for conversion
-	int width, height;
-	width = cv_ptr->image.size().width;
-	height = cv_ptr->image.size().height;
-	uchar rval = 0, gval=0, bval=0;
-
-	//direct conversion from Mat to image<rgb>
-	image<rgb> *inputIm = new image<rgb>(width,height);
-	image<rgb> *outputIm = new image<rgb>(width,height);
-
-	//Now scan through 
-	for (int y=0; y < height; y++){
-		for(int x=0; x<width; x++){
-			//get values from
-			float intensity = cv_ptr->image.at<float>(y,x);
-			imRef(inputIm,x,y).r = intensity;
-			imRef(inputIm,x,y).g = intensity;
-			imRef(inputIm,x,y).b = intensity;
-		}
-	}
-
-
-	int num_ccs; 
-	outputIm = segment_image(inputIm, sigma, k, min_size, &num_ccs);
-
-   	//replace data in message
-    //Go through all the rows
-    for(int y=0; y<cv_ptr->image.rows; y++)
-    {
-        //Go through all the columns
-        for(int x=0; x<cv_ptr->image.cols; x++)
-        {
-            //assume red is 2
-			cv_ptr->image.data[y*cv_ptr->image.rows*4+x*3 + 2] = imRef(outputIm,x,y).r;
-			//green is 1
-			cv_ptr->image.data[y*cv_ptr->image.rows*4+x*3 + 1] = imRef(outputIm,x,y).g;
-			//blue is 0
-			cv_ptr->image.data[y*cv_ptr->image.rows*4+x*3 + 0] = imRef(outputIm,x,y).b;
-
-        }
-    }*/
- 
