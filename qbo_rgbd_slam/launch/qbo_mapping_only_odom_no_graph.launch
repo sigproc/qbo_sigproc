@@ -1,0 +1,42 @@
+<launch>
+  <arg name="qbo_address" default="sigproc-robot1" />
+  <arg name="qbo_user" default="qbo" />
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find ccny_rgbd)/launch/vo+mapping.rviz" />
+
+
+  <group>
+    <machine name="qbo" address="$(arg qbo_address)" user="$(arg qbo_user)" default="true"
+      env-loader="ROS_HOSTNAME=$(arg qbo_address) ~/cued-masters/devel/env.sh" />
+
+    <!-- Start the openni driver -->
+    <include file="$(find qbo_sigproc_launch)/launch/include/openni.launch">
+        <arg name="machine" value="qbo" />
+    </include>
+
+    <!-- Start the joypay controller -->
+    <group>
+      <node name="joypad" pkg="joy" type="joy_node"/>
+      <node name="joypad_controller" pkg="qbo_joypad" type="joypad_controller.py" />
+    </group>
+
+    <!-- Start Q.bo drivers -->
+    <node name="qbo_arduqbo" pkg="qbo_arduqbo" type="qbo_arduqbo" output="screen" respawn="true">
+      <rosparam file="$(find qbo_rgbd_slam)/launch/include/qbo_settings_for_mapping_only_odom.yaml" command="load" />
+    </node>
+    
+    <!-- Add in head joint odometry -->
+    <node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />
+
+    <!-- Decimator node -->
+    <node name="decimator_node" pkg="qbo_pcl" type="qbo_pcl_decimator" args="_input_topic:=/camera/depth/points _output_topic:=/camera/depth/decimated_points"/>
+
+    <!-- Accumulator node -->
+    <node name="accumulator_node" pkg="qbo_pcl" type="qbo_pcl_accumulate" args="_leaf_size:=0.3 _input_topic:=/camera/depth/transformed_points _output_topic:=/map/point_cloud"/>
+
+    <!-- Transformer node -->
+    <node name="transformer_node" pkg="qbo_pcl" type="qbo_pcl_transform" args="_target_frame:=/odom _input_topic:=/camera/depth/decimated_points _output_topic:=/camera/depth/transformed_points"/>
+    
+
+  </group>
+</launch>
