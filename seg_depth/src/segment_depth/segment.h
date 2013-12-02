@@ -329,6 +329,9 @@ typedef struct {
 // threshold function
 #define THRESHOLD(size, c) (c/size)
 
+universe *segment_graph(int num_vertices, int num_edges, edge *edges, float c);
+
+
 /***************convolve.h***********************/
 static void convolve_even(image<float> *src, image<float> *dst, std::vector<float> &mask);
 static void convolve_odd(image<float> *src, image<float> *dst, std::vector<float> &mask) ;
@@ -340,8 +343,14 @@ rgb random_rgb();
 
 // dissimilarity measure between pixels
 static inline float diff(image<float> *r, image<float> *g, image<float> *b, int x1, int y1, int x2, int y2) ;
+static inline float diff1C(image<float> *d, int x1, int y1, int x2, int y2);
 
-image<rgb> *segment_image(image<rgb> *im, float sigma, float c, int min_size,  int *num_ccs); 
+image<rgb> *segment_image(image<rgb> *im, float sigma, float c, int min_size,  int *num_ccs);
+image<rgb> *segment_image1C(image<float> *im, float sigma, float c, int min_size,
+			  int *num_ccs) ;
+
+edge* create_depth_graph(image<float> *d, int *edgeNum);
+
 
 
 

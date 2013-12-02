@@ -25,7 +25,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #include "filter.h"
 #include "segment-graph.h"
 #include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <iostream>
 
 
 /*//eigen includes
@@ -225,7 +227,7 @@ static inline float anglediff(image<cv::Vec3f> *normals, int x1, int y1, int x2,
 
 	//TODO
 	angleRAD = acos(dotprod);
-	return angleRAD;
+	return angleRAD*180;
 }
 
 //TODO change type of input image
@@ -322,7 +324,7 @@ image<cv::Vec3f>* create_normal_image(image<float>* d, universe *u){
 	for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
 
-
+		
 		//get the component of the current pixel
 		int comp = u->find(y * width + x);
 		//initialise vector to hold points
@@ -343,6 +345,23 @@ image<cv::Vec3f>* create_normal_image(image<float>* d, universe *u){
 				}
 			}
 		}
+		
+		//to print out every 10,000th result
+		/*if ( !(x % 100) && !(y % 100) ){
+				std::cout<<"Pel: (" <<  x << "," << y << "): " << std::endl;
+				std::cout << " Points: " << std::endl;
+				for (int i = 0; i < points.size(); i++ ){
+					cv::Vec4f p = points.at(i);
+					std::cout << "(";
+					for (int j = 0; j <4; j++){
+						std::cout << " " << p[j];
+					}
+					std::cout << " )" << std::endl;
+					cv::waitKey(1);
+				}
+		}*/
+
+
 		//Now we want to convert the the vector points, a list of 3xN vectors into a Mat
 		cv::Mat pointsMat = cv::Mat(points). //convert vector in Mat,
 							reshape(1);//make Nx4 1-channel Matrix out of Nx1 4-channel
@@ -353,20 +372,29 @@ image<cv::Vec3f>* create_normal_image(image<float>* d, universe *u){
 		//solve
 		if(pointsMat.rows >3){
 			try{
-				cv::solve(pointsMat,RHS,normal,cv::DECOMP_SVD);
+				//cv::solve(pointsMat,RHS,normal,cv::DECOMP_SVD);
+				cv::SVD::solveZ(pointsMat, normal);
 			}
 			catch( cv:: Exception& e) {
 				//if the above is not solvable, let normal equal the same as the previous
-				normal = Oldnormal;
+				normal = cv::Mat::ones(4,1,CV_32FC1)*-1;
+				
 			}
 		}
 		else {
-			Oldnormal = normal;
+			//Oldnormal = normal;
+			//std::cout<<"No Normal for: (" <<  x << "," << y << ")" << std::endl;
 		}
 		//now put normal into image<cv::Vec3f>
 		imRef(normals,x,y)[0] = normal.at<float>(0);
 		imRef(normals,x,y)[1] = normal.at<float>(1);
 		imRef(normals,x,y)[2] = normal.at<float>(2);
+
+
+		/*if ( !(x % 100) && !(y % 100) ){
+			std::cout << "Normal: ( " << imRef(normals,x,y)[0] << " " << imRef(normals,x,y)[1] << " ";
+			std::cout << imRef(normals,x,y)[2] << " )" << std::endl;
+		}*/
 
 		}
 	}
@@ -416,7 +444,8 @@ image<rgb> *segment_image1C(image<float> *im, float sigma, float c, int min_size
   edge* g_depth = create_depth_graph(smooth_d, &num_depth);
 
   // segment depth graph
-  universe *u_depth = segment_graph(width*height, num_depth, g_depth, c);
+  int depthThreshK = c;
+  universe *u_depth = segment_graph(width*height, num_depth, g_depth, depthThreshK);
 
   // post process small components of depth graph
   post_process_components(g_depth, u_depth, num_depth, min_size);
@@ -432,7 +461,8 @@ image<rgb> *segment_image1C(image<float> *im, float sigma, float c, int min_size
   delete normals;
 
   //segment normal graph
-  universe *u_normal = segment_graph(width*height, num_normal, g_normal, c);
+  int normalThreshK = 300;
+  universe *u_normal = segment_graph(width*height, num_normal, g_normal, normalThreshK);
   
   // post process small components of normal graph
   post_process_components(g_normal, u_normal, num_normal, min_size);
@@ -447,6 +477,7 @@ image<rgb> *segment_image1C(image<float> *im, float sigma, float c, int min_size
   //*num_ccs = u_depth->num_sets();
   *num_ccs = u_normal->num_sets();
   //color output image for depth segmentation
+  //image<rgb> *output = create_imageFrom_universe(u_depth, width, height);
   image<rgb> *output = create_imageFrom_universe(u_normal, width, height);
 
   delete u_depth;

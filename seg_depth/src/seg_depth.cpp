@@ -39,8 +39,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 	//get the image into a known format and display
     double minval, maxval;
     cv::minMaxIdx(in_msg->image, &minval, &maxval);
-    std::cout << "Minval: " << minval << std::endl;
-    std::cout << "Maxval: " << maxval << std::endl;
+    //std::cout << "Minval: " << minval << std::endl;
+    //std::cout << "Maxval: " << maxval << std::endl;
 
     //cv::Mat *output_Im = new cv::Mat();
     in_msg->image.convertTo(in_msg->image, CV_8UC1,255.0/maxval);
@@ -49,30 +49,35 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 	float sigma = 0.5;
 	float k = 500;
 	int min_size = 20;
+	int alpha = 5;
 
 	//params for conversion
-	int width, height;
-	width = in_msg->image.size().width;
-	height = in_msg->image.size().height;
+	int in_width, in_height;
+	int sub_width, sub_height;
+	in_width = in_msg->image.size().width;
+	in_height = in_msg->image.size().height;
 	uchar dval = 0;
 
+	//subsample
+	sub_width = in_width/alpha;
+	sub_height = in_height/alpha;
+
 	//direct conversion from Mat to image<rgb>
-	image<float> *inputIm = new image<float>(width,height);
-	image<rgb> *outputIm = new image<rgb>(width,height);
+	image<float> *inputIm = new image<float>(in_width,in_height);
+	image<rgb> *outputIm = new image<rgb>(in_width,in_height);
 
 	//Now scan through and create image<rbg> for segmenting
-	for (int y=0; y < height; y++){
-		for(int x=0; x<width; x++){
+	for (int y=0; y < in_height; y++){
+		for(int x=0; x<in_width; x++){
 			//get values from
-			uchar intensity = in_msg->image.at<uchar>(y,x);
-			dval = intensity;
-			//gval = intensity;
-			//bval = intensity;
+			dval = in_msg->image.at<uchar>(y,x);
 			imRef(inputIm,x,y) = dval;
-			//imRef(inputIm,x,y).g = gval;
-			//imRef(inputIm,x,y).b = bval;
 		}
 	}
+
+
+	
+
 
 
 	int num_ccs; 
