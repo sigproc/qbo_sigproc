@@ -45,11 +45,6 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
     //cv::Mat *output_Im = new cv::Mat();
     in_msg->image.convertTo(in_msg->image, CV_8UC1,255.0/maxval);
 
-	
-	//IMAGE CAN BE VIEWD HERE
- /* cv::imshow(WINDOW, cv_ptr->image);
-    cv::waitKey(3);*/
-
 	const char* filename = "tmpIm.ppm";
 	float sigma = 0.5;
 	float k = 500;
@@ -59,35 +54,35 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 	int width, height;
 	width = in_msg->image.size().width;
 	height = in_msg->image.size().height;
-	uchar rval = 0, gval=0, bval=0;
+	uchar dval = 0;
 
 	//direct conversion from Mat to image<rgb>
-	image<rgb> *inputIm = new image<rgb>(width,height);
+	image<float> *inputIm = new image<float>(width,height);
 	image<rgb> *outputIm = new image<rgb>(width,height);
 
-	//Now scan through 
+	//Now scan through and create image<rbg> for segmenting
 	for (int y=0; y < height; y++){
 		for(int x=0; x<width; x++){
 			//get values from
 			uchar intensity = in_msg->image.at<uchar>(y,x);
-			rval = intensity;
-			gval = intensity;
-			bval = intensity;
-			imRef(inputIm,x,y).r = rval;
-			imRef(inputIm,x,y).g = gval;
-			imRef(inputIm,x,y).b = bval;
+			dval = intensity;
+			//gval = intensity;
+			//bval = intensity;
+			imRef(inputIm,x,y) = dval;
+			//imRef(inputIm,x,y).g = gval;
+			//imRef(inputIm,x,y).b = bval;
 		}
 	}
 
-	//IMAGE CAN BE VIEWD HERE
 
 	int num_ccs; 
-	outputIm = segment_image(inputIm, sigma, k, min_size, &num_ccs);
+	//segment image
+	outputIm = segment_image1C(inputIm, sigma, k, min_size, &num_ccs);
 
 	//create RGB Mat
 	cv::Mat OutputBGRMat = cv::Mat::zeros(in_msg->image.size(),CV_8UC3);
-	//cv::Mat OutputGrayMat = cv::Mat::zeros(in_msg->image.size(),CV_8UC1);
 
+	//fill in NEW mat with segmented data (MAKING A MESSAGE FROM SCRATCH AND NOT USING MSG_IN)
 	 cv::Mat_<cv::Vec3b> _OutputBGRMat = OutputBGRMat;
 
      for( int y = 0; y < OutputBGRMat.rows; ++y)
@@ -102,23 +97,13 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 
 
 	//now convert OutputMat to grayscale
-	//cv::cvtColor(OutputBGRMat, OutputGrayMat, CV_BGR2GRAY);
 	cv::cvtColor(OutputBGRMat, in_msg->image, CV_BGR2GRAY);
- 
-    //Display the image using OpenCV
-    cv::imshow(WINDOW, in_msg->image);
-
-    cv::waitKey(3);
 
 	cv_bridge::CvImage out_msg;
 	out_msg = cv_bridge::CvImage(in_msg->header, sensor_msgs::image_encodings::BGR8, OutputBGRMat);
-	//out_msg.header   = in_msg->header; // Same timestamp and tf frame as input image
-	//out_msg.encoding = sensor_msgs::image_encodings::BGR8; // Or whatever
-	//out_msg.image    = OutputBGRMat; // Your cv::Mat*/
-
-	
-	
-
+    //Display the image using OpenCV
+    cv::imshow(WINDOW, out_msg.image);
+    cv::waitKey(3);
 
     pub.publish(out_msg.toImageMsg());
 }
