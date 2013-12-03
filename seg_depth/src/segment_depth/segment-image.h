@@ -215,7 +215,7 @@ edge* create_depth_graph(image<float> *d, int *edgeNum){
   return edges;
 }
 
-//TODO change type of input image
+
 static inline float anglediff(image<cv::Vec3f> *normals, int x1, int y1, int x2, int y2) {
   
 	float angleRAD = 0;
@@ -225,8 +225,8 @@ static inline float anglediff(image<cv::Vec3f> *normals, int x1, int y1, int x2,
 	float dotc = (imRef(normals, x1, y1)[2])*(imRef(normals, x2, y2)[2]);
 	float dotprod = dota+dotb+dotc;
 
-	//TODO
 	angleRAD = acos(dotprod);
+	//this 180 is deliberate to increase the differences between the weights.
 	return angleRAD*180;
 }
 
@@ -382,13 +382,15 @@ image<cv::Vec3f>* create_normal_image(image<float>* d, universe *u){
 			}
 		}
 		else {
-			//Oldnormal = normal;
+			//if we cant find the new normal, use the previously used one
+			normal = Oldnormal;
 			//std::cout<<"No Normal for: (" <<  x << "," << y << ")" << std::endl;
 		}
 		//now put normal into image<cv::Vec3f>
 		imRef(normals,x,y)[0] = normal.at<float>(0);
 		imRef(normals,x,y)[1] = normal.at<float>(1);
 		imRef(normals,x,y)[2] = normal.at<float>(2);
+		Oldnormal = normal;
 
 
 		/*if ( !(x % 100) && !(y % 100) ){
@@ -415,11 +417,41 @@ image<cv::Vec3f>* create_normal_image(image<float>* d, universe *u){
 
 }
 
-universe* merge_segmentations(universe *u_depth, universe *u_normal){
+universe* merge_segmentations(universe *u_depth, universe *u_normal, int width, int height){
 	//TODO
     // loop through each pixel in new u_final, and assign component value
     //depending on which components the pixels belong to in u_depth and u_normal
-	return u_depth;
+	
+	//ensure u_depth and u_normal are of the same size
+
+	universe *u_final = new universe(width*height);
+	std::map<int,int> components;
+	
+	//loop through each pixel, which will have a corresponding component in the new universe
+	for (int y = 0; y < height; y++) {
+    	for (int x = 0; x < width; x++) {
+			int pelIndex = y*width+x;
+			int d_comp = u_depth->find(pelIndex);
+			int n_comp = u_normal->find(pelIndex);
+			//compute a key unique to the combination of depth and normal components
+			int mapKey = d_comp*width*height+n_comp;
+			//see if this key has already been found.
+			std::map<int,int>::iterator it = components.find(mapKey);
+			if(it == components.end() ) {
+				//this combination is new to the universe, so lets add its component to those present in u_final
+				int f_comp = u_final->find(pelIndex);
+				components.insert(std::pair<int,int>(mapKey, f_comp) );
+			}
+			else {
+				//this combination has already been found, so join the new pixel to that component
+				int compMatch = it->second;
+				//now join the current pel in u_final, with the existing group
+				u_final->join(pelIndex, compMatch);
+			}
+		}
+	}
+
+	return u_final;
 }
 
 image<rgb> *segment_image1C(image<float> *im, float sigma, float c, int min_size,
@@ -472,94 +504,20 @@ image<rgb> *segment_image1C(image<float> *im, float sigma, float c, int min_size
 
   //finally, use both segmentations to merge segmentations into regions which are in the same components in
   // both u_normal and u_depth
-  //universe *u_final = merge_segmentations(u_depth, u_normal);
+  universe *u_final = merge_segmentations(u_depth, u_normal, width, height);
 
   //*num_ccs = u_depth->num_sets();
-  *num_ccs = u_normal->num_sets();
+  *num_ccs = u_final->num_sets();
   //color output image for depth segmentation
   //image<rgb> *output = create_imageFrom_universe(u_depth, width, height);
-  image<rgb> *output = create_imageFrom_universe(u_normal, width, height);
+  //image<rgb> *output = create_imageFrom_universe(u_normal, width, height);
+  image<rgb> *output = create_imageFrom_universe(u_final, width, height);
 
   delete u_depth;
   delete u_normal;
-  //delete u_final;
+  delete u_final;
 
   return output;
 }
-
-
-/*image<float>* create_normal_image(image<float>* d, universe *u){
-	int width = d->width();
-    int height = d->height();
-
-	//create 'image' to hold normals
-	image<Eigen::Vector3d> normals = new image<Eigen::Vector3d>(width, height);
-
-	//for each pixel in the image
-	for (int y = 0; y < height; y++) {
-
-      for (int x = 0; x < width; x++) {
-
-
-		int numpoints = 0;
-		//get the component of the current pixel
-
-		int comp = u->find(y * width + x);
-		//add points if they share the same component as p(x,y)
-		//get number of points required
-		for (int i = -1; i <2; i++){
-			//let j be y offset
-
-			for( int j = -1; j <2; j++){
-				//get comp from pixel relative to centre pel
-				int chkcomp = u->find( (y+j)*width +(x+i) );
-				//if comp increase count
-				if( chkcomp == comp){
-
-					numpoints++;
-				}
-			}
-		}
-
-
-
-		// now we know how big points needs to be, we do it again, but this time allocate the points
-		Eigen::Vector3d points[numpoints];
-		numpoints = 0;
-		//let i be x offset
-		for (int i = -1; i <2; i++){
-
-			//let j be y offset
-			for( int j = -1; j <2; j++){
-				//get comp from pixel relative to centre pel
-				int chkcomp = u->find( (y+j)*width +(x+i) );
-				//if comp is the same, add to points for regression
-
-				if( chkcomp == comp){
-					float intensity = imRef(d, (x+i), (y+j)) ;
-					//points[numpoints] = Eigen::Vector3d ( (float)i, (float)j, intensity ); //TODO
-					numpoints++;
-				}
-
-			}
-		}
-		//get coeffs to point to representative element in the 'image' normals
-		Eigen::Vector3d coeffs = imRef(normals, x,y);
-		//now use eigen to do regression
-
-		//Eigen::linearRegression(numpoints, &points, &coeffs, 2);//TODO
-
-		//coeffs now represent normal
-		//TODO
-
-		}
-
-	}
-
-	return d;
-
-
-}*/
-
 
 #endif

@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+#include <stdlib.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -49,7 +50,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 	float sigma = 0.5;
 	float k = 500;
 	int min_size = 20;
-	int alpha = 5;
+	int alpha = 5, s = 5;
 
 	//params for conversion
 	int in_width, in_height;
@@ -57,30 +58,38 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 	in_width = in_msg->image.size().width;
 	in_height = in_msg->image.size().height;
 	uchar dval = 0;
+	//create seed for random numb generator
+	srand(time(NULL));
 
-	//subsample
+	//subsample variables
 	sub_width = in_width/alpha;
 	sub_height = in_height/alpha;
 
 	//direct conversion from Mat to image<rgb>
-	image<float> *inputIm = new image<float>(in_width,in_height);
-	image<rgb> *outputIm = new image<rgb>(in_width,in_height);
+	image<float> *inputIm = new image<float>(sub_width,sub_height);
+	image<rgb> *outputIm = new image<rgb>(sub_width,sub_height);
 
-	//Now scan through and create image<rbg> for segmenting
-	for (int y=0; y < in_height; y++){
-		for(int x=0; x<in_width; x++){
-			//get values from
-			dval = in_msg->image.at<uchar>(y,x);
-			imRef(inputIm,x,y) = dval;
+	//Now scan through and create a subsampled image<char> for segmenting
+	for (int y=0; y < sub_height; y++){
+		for(int x=0; x < sub_width; x++){
+			//get s values randomly from each cell into list
+			std::vector<uchar> samples;
+			for (int i = 0 ; i <= s; i++){
+				//random x and y offset vals
+				int dx = rand() % alpha;
+				int dy = rand() % alpha;
+				//grab the associated pel from the input image
+				dval = in_msg->image.at<uchar>(y*alpha+dy,x*alpha+dx);
+				samples.push_back(dval);
+			}
+			//arrange the samples with the median value in the position of s/2
+			std::nth_element(samples.begin(), samples.begin()+s/2, samples.end());
+			//take the median value to be our sampled point
+			imRef(inputIm,x,y) = samples[s/2];
 		}
 	}
 
-
-	
-
-
-
-	int num_ccs; 
+	int num_ccs = 0; 
 	//segment image
 	outputIm = segment_image1C(inputIm, sigma, k, min_size, &num_ccs);
 
@@ -93,9 +102,9 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
      for( int y = 0; y < OutputBGRMat.rows; ++y)
         for( int x = 0; x < OutputBGRMat.cols; ++x )
            {
-               _OutputBGRMat(y,x)[0] = imRef(outputIm,x,y).b;
-               _OutputBGRMat(y,x)[1] = imRef(outputIm,x,y).g;
-               _OutputBGRMat(y,x)[2] = imRef(outputIm,x,y).r;
+               _OutputBGRMat(y,x)[0] = imRef(outputIm,x/alpha,y/alpha).b;
+               _OutputBGRMat(y,x)[1] = imRef(outputIm,x/alpha,y/alpha).g;
+               _OutputBGRMat(y,x)[2] = imRef(outputIm,x/alpha,y/alpha).r;
         }
 
       OutputBGRMat= _OutputBGRMat;
