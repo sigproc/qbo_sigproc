@@ -29,15 +29,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
 
-
-/*//eigen includes
-#define EIGEN2_SUPPORT
-#include "../eigen/Eigen/LeastSquares"
-//#include <Eigen/LeastSquares>*/
-
-
-
-
 // random color
 rgb random_rgb(){ 
   rgb c;
@@ -49,6 +40,13 @@ rgb random_rgb(){
 #include <opencv2/core/core.hpp>
   return c;
 }
+
+/********************************************************************
+********Function: diff1C							 ****************
+********Description: returns euclidean distance		 ****************
+******** 			 between two 3 channel pixel	 ****************
+********			 values							 ****************
+*********************************************************************/
 
 // dissimilarity measure between pixels
 static inline float diff(image<float> *r, image<float> *g, image<float> *b,
@@ -69,6 +67,13 @@ static inline float diff(image<float> *r, image<float> *g, image<float> *b,
  * min_size: minimum component size (enforced by post-processing stage).
  * num_ccs: number of connected components in the segmentation.
  */
+
+/********************************************************************
+********Function: segment_image						 ****************
+********Description: segments rgb image by intensity ****************
+******** 			 	REDUNDANT					 ****************
+*********************************************************************/
+
 image<rgb> *segment_image(image<rgb> *im, float sigma, float c, int min_size,
 			  int *num_ccs) {
   int width = im->width();
@@ -163,12 +168,22 @@ image<rgb> *segment_image(image<rgb> *im, float sigma, float c, int min_size,
 
   return output;
 }
-
+/********************************************************************
+********Function: diff1C							 ****************
+********Description: returns euclidean distance		 ****************
+******** 			 between two single channel pixel****************
+********			 values							 ****************
+*********************************************************************/
 // dissimilarity measure between pixels
 static inline float diff1C(image<float> *d, int x1, int y1, int x2, int y2) {
   return sqrt(  square(  imRef(d, x1, y1)-imRef(d, x2, y2)  )   );
 }
 
+/********************************************************************
+********Function: create_depth_graph				 ****************
+********Description: Given depth image, returns graph****************
+******** 			 object weighted by depth	     ****************
+*********************************************************************/
 edge* create_depth_graph(image<float> *d, int *edgeNum){
 	
 	int width = d->width();
@@ -214,8 +229,11 @@ edge* create_depth_graph(image<float> *d, int *edgeNum){
   *edgeNum = num;
   return edges;
 }
-
-
+/********************************************************************
+********Function: anglediff					 		 ****************
+********Description: Given normal image and 2 pixels ****************
+******** 			 returns angular difference in rad***************
+*********************************************************************/
 static inline float anglediff(image<cv::Vec3f> *normals, int x1, int y1, int x2, int y2) {
   
 	float angleRAD = 0;
@@ -226,11 +244,19 @@ static inline float anglediff(image<cv::Vec3f> *normals, int x1, int y1, int x2,
 	float dotprod = dota+dotb+dotc;
 
 	angleRAD = acos(dotprod);
-	//this 180 is deliberate to increase the differences between the weights.
-	return angleRAD*180;
+	/*if ( !(x1 % 50) && !(y1 % 50) ){
+		std::cout << "angleRAD: " << angleRAD << std::endl;
+	}*/
+	//TODO Work out a suitable, and logical scaling factor
+	return angleRAD;
 }
 
-//TODO change type of input image
+/********************************************************************
+********Function: create_normal_graph				 ****************
+********Description: Given normal image, returns 	 ****************
+******** 			 graph object				     ****************
+*********************************************************************/
+
 edge* create_normal_graph(image<cv::Vec3f> *normals, int *edgeNum){
 	
 	int width = normals->width();
@@ -277,10 +303,11 @@ edge* create_normal_graph(image<cv::Vec3f> *normals, int *edgeNum){
   return edges;
 }
 
-
-
-
-
+/********************************************************************
+********Function: post_process_components			 ****************
+********Description: Merges connected components	 ****************
+******** 			 which are smaller than min_size ****************
+*********************************************************************/
 void post_process_components(edge* edges, universe *u, int num, int min_size){
 	// post process small components
   for (int i = 0; i < num; i++) {
@@ -290,6 +317,13 @@ void post_process_components(edge* edges, universe *u, int num, int min_size){
       u->join(a, b);
   }
 }
+
+/********************************************************************
+********Function: create_imageFrom_universe			 ****************
+********Description: Given a universe image, returns ****************
+******** 			 rgb visualisation of connected  ****************
+********			 components.					 ****************
+*********************************************************************/
 
 image<rgb>* create_imageFrom_universe(universe *u, int width, int height){
 
@@ -310,7 +344,11 @@ image<rgb>* create_imageFrom_universe(universe *u, int width, int height){
   delete [] colors;  
   return output;
 }
-
+/********************************************************************
+********Function: create_normal_image				 ****************
+********Description: Given depth image and segmented ****************
+******** 			 depth universe, creates normal Im **************
+*********************************************************************/
 image<cv::Vec3f>* create_normal_image(image<float>* d, universe *u){
 	int width = d->width();
     int height = d->height();
@@ -318,7 +356,7 @@ image<cv::Vec3f>* create_normal_image(image<float>* d, universe *u){
 	//create 'image' to hold normals
 	image<cv::Vec3f>* normals = new image<cv::Vec3f>(width, height);
 	//old normal tmp for handling unsolvable edge cases
-	cv::Mat Oldnormal = cv::Mat::zeros(4,1,CV_32FC1);
+	cv::Mat Oldabcd = cv::Mat::zeros(4,1,CV_32FC1);
 
 	//for each pixel in the image
 	for (int y = 0; y < height; y++) {
@@ -367,33 +405,36 @@ image<cv::Vec3f>* create_normal_image(image<float>* d, universe *u){
 							reshape(1);//make Nx4 1-channel Matrix out of Nx1 4-channel
 
 		//create destination Mat and RHS zeros Mat
-		cv::Mat normal = cv::Mat::zeros(4,1,CV_32FC1);
-		cv::Mat RHS = cv::Mat::zeros(pointsMat.rows,1, CV_32FC1);
+		cv::Mat abcd = cv::Mat::zeros(4,1,CV_32FC1);
+		cv::Mat normal = cv::Mat::zeros(3,1, CV_32FC1);
 		//solve
 		if(pointsMat.rows >3){
 			try{
 				//cv::solve(pointsMat,RHS,normal,cv::DECOMP_SVD);
-				cv::SVD::solveZ(pointsMat, normal);
+				cv::SVD::solveZ(pointsMat, abcd);
 			}
 			catch( cv:: Exception& e) {
 				//if the above is not solvable, let normal equal the same as the previous
-				normal = cv::Mat::ones(4,1,CV_32FC1)*-1;
+				abcd = cv::Mat::ones(4,1,CV_32FC1)*-1;
 				
 			}
 		}
 		else {
 			//if we cant find the new normal, use the previously used one
-			normal = Oldnormal;
+			abcd = Oldabcd;
 			//std::cout<<"No Normal for: (" <<  x << "," << y << ")" << std::endl;
 		}
+		//now normalise into normal
+		cv::normalize(abcd.rowRange(0,3), normal, 1, 0, cv::NORM_L2);
+
 		//now put normal into image<cv::Vec3f>
 		imRef(normals,x,y)[0] = normal.at<float>(0);
 		imRef(normals,x,y)[1] = normal.at<float>(1);
 		imRef(normals,x,y)[2] = normal.at<float>(2);
-		Oldnormal = normal;
+		Oldabcd = abcd;
 
 
-		/*if ( !(x % 100) && !(y % 100) ){
+		/*if ( !(x % 50) && !(y % 50) ){
 			std::cout << "Normal: ( " << imRef(normals,x,y)[0] << " " << imRef(normals,x,y)[1] << " ";
 			std::cout << imRef(normals,x,y)[2] << " )" << std::endl;
 		}*/
@@ -417,8 +458,13 @@ image<cv::Vec3f>* create_normal_image(image<float>* d, universe *u){
 
 }
 
+/********************************************************************
+********Function: merge_segmentations				 ****************
+********Description: Given two universes, returns	 ****************
+******** 			 union of connected components   ****************
+*********************************************************************/
+
 universe* merge_segmentations(universe *u_depth, universe *u_normal, int width, int height){
-	//TODO
     // loop through each pixel in new u_final, and assign component value
     //depending on which components the pixels belong to in u_depth and u_normal
 	
@@ -453,9 +499,40 @@ universe* merge_segmentations(universe *u_depth, universe *u_normal, int width, 
 
 	return u_final;
 }
+/********************************************************************
+********Function: visualise_normals					 ****************
+********Description: Given normal image, returns rbg ****************
+******** 			 visualisation of normal image   ****************
+*********************************************************************/
+image<rgb> *visualise_normals(image<cv::Vec3f> *normalsVec){
+	
+	int width = normalsVec->width();
+    int height = normalsVec->height();	
 
-image<rgb> *segment_image1C(image<float> *im, float sigma, float c, int min_size,
-			  int *num_ccs) {
+	//first need to extend the range from 0->1 to 0->255
+	image<rgb> *normalsRGB = new image<rgb>(width, height);
+	//now scan through and apply multiplication
+	for (int y = 0; y < height; y++) {
+	    for (int x = 0; x < width; x++) {
+			imRef(normalsRGB, x, y).r = (imRef(normalsVec,x,y)[0]+1)*128;
+			imRef(normalsRGB, x, y).g = (imRef(normalsVec,x,y)[1]+1)*128;
+			imRef(normalsRGB, x, y).b = (imRef(normalsVec,x,y)[2]+1)*128;
+    	}
+	}
+
+	return normalsRGB;
+}
+/**************************************************************************
+********Function: segment_image1C                          ****************
+********Description: Given a single channel depth image,   ****************
+********             returns RBG image representing any of:****************
+********             Complete, Depth or Normal only 
+********             segmentations.						   ****************
+**************************************************************************/
+/*image<rgb> *segment_image1C(image<float> *im, float sigma, float c, int min_size,
+			  int *num_ccs) {*/
+image<rgb> *segment_image1C(image<float> * im, float sigma, float c, int min_size,
+			  int * num_ccs, image<rgb> ** outputs0, image<rgb> ** outputs1, image<rgb> ** outputs2) {
   int width = im->width();
   int height = im->height();
 
@@ -482,8 +559,9 @@ image<rgb> *segment_image1C(image<float> *im, float sigma, float c, int min_size
   // post process small components of depth graph
   post_process_components(g_depth, u_depth, num_depth, min_size);
 
-  //TODO create normal image
+  // create normal image
   image<cv::Vec3f> *normals = create_normal_image(smooth_d, u_depth);
+  /*image<rgb>*/ *outputs0 = visualise_normals(normals);
   
   int num_normal;
   edge* g_normal = create_normal_graph(normals, &num_normal);
@@ -493,25 +571,30 @@ image<rgb> *segment_image1C(image<float> *im, float sigma, float c, int min_size
   delete normals;
 
   //segment normal graph
-  int normalThreshK = 300;
+  int normalThreshK = 500;
   universe *u_normal = segment_graph(width*height, num_normal, g_normal, normalThreshK);
   
   // post process small components of normal graph
   post_process_components(g_normal, u_normal, num_normal, min_size);
 
-  delete [] g_depth;
-  delete [] g_normal;
-
   //finally, use both segmentations to merge segmentations into regions which are in the same components in
   // both u_normal and u_depth
   universe *u_final = merge_segmentations(u_depth, u_normal, width, height);
 
+  //TODO properly
+  post_process_components(g_depth, u_final, num_depth, min_size);
+
+  delete [] g_depth;
+  delete [] g_normal;
+
   //*num_ccs = u_depth->num_sets();
   *num_ccs = u_final->num_sets();
   //color output image for depth segmentation
-  //image<rgb> *output = create_imageFrom_universe(u_depth, width, height);
-  //image<rgb> *output = create_imageFrom_universe(u_normal, width, height);
+
+  *outputs1 = create_imageFrom_universe(u_depth, width, height);
+  *outputs2 = create_imageFrom_universe(u_normal, width, height);
   image<rgb> *output = create_imageFrom_universe(u_final, width, height);
+
 
   delete u_depth;
   delete u_normal;

@@ -18,8 +18,11 @@ static const char WINDOW[] = "Image Processed";
 //prototype
 int segment(float sigma, float k, int min_size, cv::Mat image);
 
-//Use method of ImageTransport to create image publisher
+//Use method of ImageTransport to create image 3 publishers
 image_transport::Publisher pub;
+image_transport::Publisher pubNormalIm;
+//image_transport::Publisher pubDepthSeg;
+//image_transport::Publisher pubNormalSeg;
 
 //This function is called everytime a new image is published
 void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
@@ -49,8 +52,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 	const char* filename = "tmpIm.ppm";
 	float sigma = 0.5;
 	float k = 500;
-	int min_size = 20;
-	int alpha = 5, s = 5;
+	int min_size = 40;
+	int alpha = 5, s = 10;
 
 	//params for conversion
 	int in_width, in_height;
@@ -69,6 +72,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 	image<float> *inputIm = new image<float>(sub_width,sub_height);
 	image<rgb> *outputIm = new image<rgb>(sub_width,sub_height);
 
+	//SUBSAMPLE
 	//Now scan through and create a subsampled image<char> for segmenting
 	for (int y=0; y < sub_height; y++){
 		for(int x=0; x < sub_width; x++){
@@ -89,9 +93,13 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 		}
 	}
 
-	int num_ccs = 0; 
+	int num_ccs = 0;
+	image<rgb> * outputs0 = new image<rgb>(sub_width,sub_height); //assign memory
+	image<rgb> * outputs1 = new image<rgb>(sub_width,sub_height);
+	image<rgb> * outputs2 = new image<rgb>(sub_width,sub_height);
+	
 	//segment image
-	outputIm = segment_image1C(inputIm, sigma, k, min_size, &num_ccs);
+	outputIm = segment_image1C(inputIm, sigma, k, min_size, &num_ccs, &outputs0, &outputs1, &outputs2);
 
 	//create RGB Mat
 	cv::Mat OutputBGRMat = cv::Mat::zeros(in_msg->image.size(),CV_8UC3);
@@ -99,19 +107,16 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 	//fill in NEW mat with segmented data (MAKING A MESSAGE FROM SCRATCH AND NOT USING MSG_IN)
 	 cv::Mat_<cv::Vec3b> _OutputBGRMat = OutputBGRMat;
 
-     for( int y = 0; y < OutputBGRMat.rows; ++y)
+     for( int y = 0; y < OutputBGRMat.rows; ++y){
         for( int x = 0; x < OutputBGRMat.cols; ++x )
            {
                _OutputBGRMat(y,x)[0] = imRef(outputIm,x/alpha,y/alpha).b;
                _OutputBGRMat(y,x)[1] = imRef(outputIm,x/alpha,y/alpha).g;
                _OutputBGRMat(y,x)[2] = imRef(outputIm,x/alpha,y/alpha).r;
         }
+	}
 
-      OutputBGRMat= _OutputBGRMat;
-
-
-	//now convert OutputMat to grayscale
-	cv::cvtColor(OutputBGRMat, in_msg->image, CV_BGR2GRAY);
+    OutputBGRMat= _OutputBGRMat;
 
 	cv_bridge::CvImage out_msg;
 	out_msg = cv_bridge::CvImage(in_msg->header, sensor_msgs::image_encodings::BGR8, OutputBGRMat);
@@ -120,6 +125,34 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
     cv::waitKey(3);
 
     pub.publish(out_msg.toImageMsg());
+
+	/********************************TEST****************************************/
+	//create RGB Mat
+	cv::Mat OutputBGRMat0 = cv::Mat::zeros(in_msg->image.size(),CV_8UC3);
+
+	//fill in NEW mat with segmented data (MAKING A MESSAGE FROM SCRATCH AND NOT USING MSG_IN)
+	 cv::Mat_<cv::Vec3b> _OutputBGRMat0 = OutputBGRMat0;
+
+     for( int y = 0; y < OutputBGRMat0.rows; ++y){
+        for( int x = 0; x < OutputBGRMat0.cols; ++x )
+           {
+               _OutputBGRMat0(y,x)[0] = imRef(outputs0,x/alpha,y/alpha).b;
+               _OutputBGRMat0(y,x)[1] = imRef(outputs0,x/alpha,y/alpha).g;
+               _OutputBGRMat0(y,x)[2] = imRef(outputs0,x/alpha,y/alpha).r;
+        }
+	}
+
+    OutputBGRMat0= _OutputBGRMat0;
+
+	cv_bridge::CvImage out_msg0;
+	out_msg0 = cv_bridge::CvImage(in_msg->header, sensor_msgs::image_encodings::BGR8, OutputBGRMat0);
+
+	pubNormalIm.publish(out_msg0.toImageMsg());
+//	pubDepthSeg.publish(out_msg[2].toImageMsg());
+//	pubNormalSeg.publish(out_msg[3].toImageMsg());
+
+	/**********************************TEST**************************************/
+	
 }
 
  
@@ -140,6 +173,10 @@ int main(int argc, char **argv)
     //OpenCV HighGUI call to destroy a display window on shut-down.
     cv::destroyWindow(WINDOW);
         pub = it.advertise("/camera/depth/segmented", 1);
+		pubNormalIm = it.advertise("/camera/depth/normal", 1);
+		//pubDepthSeg = it.advertise("/camera/depth/dSeg",1);
+		//pubNormalSeg = it.advertise("/camera/depth/nSeg",1);
+
         ros::spin();
     //ROS_INFO is the replacement for printf/cout.
     ROS_INFO("tutorialROSOpenCV::main.cpp::No error.");
