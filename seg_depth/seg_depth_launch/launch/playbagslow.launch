@@ -6,7 +6,8 @@
         <arg name="load_driver" value="false"/>
       </include>
 
-	<node pkg="rosbag" type="play" name="rosbag" output="screen" args="-l $(arg bag_path)"/>
+	<node pkg="rosbag" type="play" name="rosbag" output="screen" args="-l $(arg bag_path) -r 0.1"/>
+#add '-r 0.1' to the args field to slow down the data stream by 10
 	<node pkg="seg_depth" type = "seg_depth" name="seg_depth"/>
 
 </launch>

@@ -348,7 +348,7 @@ static inline float diff1C(image<float> *d, int x1, int y1, int x2, int y2);
 image<rgb> *segment_image(image<rgb> *im, float sigma, float c, int min_size,  int *num_ccs);
 /*image<rgb> *segment_image1C(image<float> *im, float sigma, float c, int min_size,
 			  int *num_ccs, ) ;*/
-image<rgb> *segment_image1C(image<float> *im, float sigma, float c, int min_size,
+image<rgb> *segment_image1C(image<float> *im, float sigma, float Kdepth, float Knormal, int min_size,
 			  int *num_ccs, image<rgb> ** outputs0, image<rgb> ** outputs1, image<rgb> ** outputs2);
 
 edge* create_depth_graph(image<float> *d, int *edgeNum);

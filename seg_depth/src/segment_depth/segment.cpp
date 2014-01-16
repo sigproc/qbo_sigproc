@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #include "segment-image.h"
 #include <string>
 
-int segment(float sigma, float k, int min_size, const char* inputStr, const char* outputStr){
+/*int segment(float sigma, float k, int min_size, const char* inputStr, const char* outputStr){
 	
   printf("loading input image.\n");
   image<rgb> *input = loadPPM(inputStr);
@@ -38,5 +38,5 @@ int segment(float sigma, float k, int min_size, const char* inputStr, const char
   printf("done! uff...thats hard work.\n");
 
   return 0;
-}
+}*/
 

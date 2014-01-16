@@ -29,6 +29,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
 
+#define NORMALWEIGHTSCALINGFACTOR 1//255/pi gives the values to be in a range that is expect for images (81)
+
 // random color
 rgb random_rgb(){ 
   rgb c;
@@ -37,12 +39,25 @@ rgb random_rgb(){
   c.r = (uchar)random();
   c.g = (uchar)random();
   c.b = (uchar)random();
-#include <opencv2/core/core.hpp>
   return c;
 }
 
+rgb ordered_rgb(int i){
+  rgb c;
+  int imodmax = i%10648;
+  int r = 0 +(10*imodmax)%200;
+  int g = 2550 -(10*imodmax)%200;
+  int b = 0 + (15*imodmax)%210;
+  c.r = r;
+  c.g = g;
+  c.b = b;
+  //std::cout << i << " " <<std::endl;
+  return c;
+}
+  
+
 /********************************************************************
-********Function: diff1C							 ****************
+********Function: diff								 ****************
 ********Description: returns euclidean distance		 ****************
 ******** 			 between two 3 channel pixel	 ****************
 ********			 values							 ****************
@@ -56,118 +71,6 @@ static inline float diff(image<float> *r, image<float> *g, image<float> *b,
 	      square(imRef(b, x1, y1)-imRef(b, x2, y2)));
 }
 
-/*
- * Segment an image
- *
- * Returns a color image representing the segmentation.
- *
- * im: image to segment.
- * sigma: to smooth the image.
- * c: constant for treshold function.
- * min_size: minimum component size (enforced by post-processing stage).
- * num_ccs: number of connected components in the segmentation.
- */
-
-/********************************************************************
-********Function: segment_image						 ****************
-********Description: segments rgb image by intensity ****************
-******** 			 	REDUNDANT					 ****************
-*********************************************************************/
-
-image<rgb> *segment_image(image<rgb> *im, float sigma, float c, int min_size,
-			  int *num_ccs) {
-  int width = im->width();
-  int height = im->height();
-
-  image<float> *r = new image<float>(width, height);
-  image<float> *g = new image<float>(width, height);
-  image<float> *b = new image<float>(width, height);
-
-  // smooth each color channel  
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      imRef(r, x, y) = imRef(im, x, y).r;
-      imRef(g, x, y) = imRef(im, x, y).g;
-      imRef(b, x, y) = imRef(im, x, y).b;
-    }
-  }
-  image<float> *smooth_r = smooth(r, sigma);
-  image<float> *smooth_g = smooth(g, sigma);
-  image<float> *smooth_b = smooth(b, sigma);
-  delete r;
-  delete g;
-  delete b;
- 
-  // build graph
-  edge *edges = new edge[width*height*4];
-  int num = 0;
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      if (x < width-1) {
-	edges[num].a = y * width + x;
-	edges[num].b = y * width + (x+1);
-	edges[num].w = diff(smooth_r, smooth_g, smooth_b, x, y, x+1, y);
-	num++;
-      }
-
-      if (y < height-1) {
-	edges[num].a = y * width + x;
-	edges[num].b = (y+1) * width + x;
-	edges[num].w = diff(smooth_r, smooth_g, smooth_b, x, y, x, y+1);
-	num++;
-      }
-
-      if ((x < width-1) && (y < height-1)) {
-	edges[num].a = y * width + x;
-	edges[num].b = (y+1) * width + (x+1);
-	edges[num].w = diff(smooth_r, smooth_g, smooth_b, x, y, x+1, y+1);
-	num++;
-      }
-
-      if ((x < width-1) && (y > 0)) {
-	edges[num].a = y * width + x;
-	edges[num].b = (y-1) * width + (x+1);
-	edges[num].w = diff(smooth_r, smooth_g, smooth_b, x, y, x+1, y-1);
-	num++;
-      }
-    }
-  }
-  delete smooth_r;
-  delete smooth_g;
-  delete smooth_b;
-
-  // segment
-  universe *u = segment_graph(width*height, num, edges, c);
-  
-  // post process small components
-  for (int i = 0; i < num; i++) {
-    int a = u->find(edges[i].a);
-    int b = u->find(edges[i].b);
-    if ((a != b) && ((u->size(a) < min_size) || (u->size(b) < min_size)))
-      u->join(a, b);
-  }
-  delete [] edges;
-  *num_ccs = u->num_sets();
-
-  image<rgb> *output = new image<rgb>(width, height);
-
-  // pick random colors for each component
-  rgb *colors = new rgb[width*height];
-  for (int i = 0; i < width*height; i++)
-    colors[i] = random_rgb();
-  
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      int comp = u->find(y * width + x);
-      imRef(output, x, y) = colors[comp];
-    }
-  }  
-
-  delete [] colors;  
-  delete u;
-
-  return output;
-}
 /********************************************************************
 ********Function: diff1C							 ****************
 ********Description: returns euclidean distance		 ****************
@@ -243,12 +146,12 @@ static inline float anglediff(image<cv::Vec3f> *normals, int x1, int y1, int x2,
 	float dotc = (imRef(normals, x1, y1)[2])*(imRef(normals, x2, y2)[2]);
 	float dotprod = dota+dotb+dotc;
 
-	angleRAD = acos(dotprod);
+	angleRAD = acos(dotprod); // acos returns values between 0 and pi (3.14)
 	/*if ( !(x1 % 50) && !(y1 % 50) ){
 		std::cout << "angleRAD: " << angleRAD << std::endl;
 	}*/
 	//TODO Work out a suitable, and logical scaling factor
-	return angleRAD;
+	return angleRAD*NORMALWEIGHTSCALINGFACTOR;
 }
 
 /********************************************************************
@@ -333,6 +236,7 @@ image<rgb>* create_imageFrom_universe(universe *u, int width, int height){
   rgb *colors = new rgb[width*height];
   for (int i = 0; i < width*height; i++)
     colors[i] = random_rgb();
+	//colors[i] = ordered_rgb(i);
   
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
@@ -357,6 +261,7 @@ image<cv::Vec3f>* create_normal_image(image<float>* d, universe *u){
 	image<cv::Vec3f>* normals = new image<cv::Vec3f>(width, height);
 	//old normal tmp for handling unsolvable edge cases
 	cv::Mat Oldabcd = cv::Mat::zeros(4,1,CV_32FC1);
+	cv::Mat rowAboveabcd = cv::Mat::zeros(4,1,CV_32FC1);
 
 	//for each pixel in the image
 	for (int y = 0; y < height; y++) {
@@ -421,17 +326,28 @@ image<cv::Vec3f>* create_normal_image(image<float>* d, universe *u){
 		}
 		else {
 			//if we cant find the new normal, use the previously used one
-			abcd = Oldabcd;
+			if( x == width-1){			
+				//in such a case the next pel is on the next line at x = 0
+				abcd = rowAboveabcd;
+			}
+			else{			
+				abcd = Oldabcd;
+			}
 			//std::cout<<"No Normal for: (" <<  x << "," << y << ")" << std::endl;
 		}
 		//now normalise into normal
-		cv::normalize(abcd.rowRange(0,3), normal, 1, 0, cv::NORM_L2);
+		cv::normalize(abcd.rowRange(0,3), normal, 1, 0, cv::NORM_L2);		
+		Oldabcd = abcd;
+		if(x == 0){
+			//keep track of first pel in each row
+			rowAboveabcd = abcd;
+		}
 
 		//now put normal into image<cv::Vec3f>
 		imRef(normals,x,y)[0] = normal.at<float>(0);
 		imRef(normals,x,y)[1] = normal.at<float>(1);
 		imRef(normals,x,y)[2] = normal.at<float>(2);
-		Oldabcd = abcd;
+		
 
 
 		/*if ( !(x % 50) && !(y % 50) ){
@@ -531,8 +447,8 @@ image<rgb> *visualise_normals(image<cv::Vec3f> *normalsVec){
 **************************************************************************/
 /*image<rgb> *segment_image1C(image<float> *im, float sigma, float c, int min_size,
 			  int *num_ccs) {*/
-image<rgb> *segment_image1C(image<float> * im, float sigma, float c, int min_size,
-			  int * num_ccs, image<rgb> ** outputs0, image<rgb> ** outputs1, image<rgb> ** outputs2) {
+image<rgb> *segment_image1C(image<float> * im, float sigma, float Kdepth, float Knormal, int min_size,
+			  int * num_ccs, image<rgb> ** normalIm, image<rgb> ** depthseg, image<rgb> ** normalseg) {
   int width = im->width();
   int height = im->height();
 
@@ -553,7 +469,7 @@ image<rgb> *segment_image1C(image<float> * im, float sigma, float c, int min_siz
   edge* g_depth = create_depth_graph(smooth_d, &num_depth);
 
   // segment depth graph
-  int depthThreshK = c;
+  int depthThreshK = Kdepth;
   universe *u_depth = segment_graph(width*height, num_depth, g_depth, depthThreshK);
 
   // post process small components of depth graph
@@ -561,7 +477,7 @@ image<rgb> *segment_image1C(image<float> * im, float sigma, float c, int min_siz
 
   // create normal image
   image<cv::Vec3f> *normals = create_normal_image(smooth_d, u_depth);
-  /*image<rgb>*/ *outputs0 = visualise_normals(normals);
+  *normalIm = visualise_normals(normals);
   
   int num_normal;
   edge* g_normal = create_normal_graph(normals, &num_normal);
@@ -571,7 +487,7 @@ image<rgb> *segment_image1C(image<float> * im, float sigma, float c, int min_siz
   delete normals;
 
   //segment normal graph
-  int normalThreshK = 500;
+  int normalThreshK = Knormal;
   universe *u_normal = segment_graph(width*height, num_normal, g_normal, normalThreshK);
   
   // post process small components of normal graph
@@ -591,8 +507,8 @@ image<rgb> *segment_image1C(image<float> * im, float sigma, float c, int min_siz
   *num_ccs = u_final->num_sets();
   //color output image for depth segmentation
 
-  *outputs1 = create_imageFrom_universe(u_depth, width, height);
-  *outputs2 = create_imageFrom_universe(u_normal, width, height);
+  *depthseg = create_imageFrom_universe(u_depth, width, height);
+  *normalseg = create_imageFrom_universe(u_normal, width, height);
   image<rgb> *output = create_imageFrom_universe(u_final, width, height);
 
 
