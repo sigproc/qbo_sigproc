@@ -80,5 +80,4 @@ universe *segment_graph(int num_vertices, int num_edges, edge *edges,
   return u;
 }
 
-
 #endif

@@ -89,7 +89,7 @@ int main(int argc, char **argv)
         image_transport::Subscriber sub = it.subscribe("/camera/rgb/image_color", 1, imageCallback);
     //OpenCV HighGUI call to destroy a display window on shut-down.
     cv::destroyWindow(WINDOW);
-        pub = it.advertise("/camera/depth/human_segmentation", 1);
+        pub = it.advertise("/camera/rgb/human_segmentation", 1);
         ros::spin();
     //ROS_INFO is the replacement for printf/cout.
     ROS_INFO("tutorialROSOpenCV::main.cpp::No error.");

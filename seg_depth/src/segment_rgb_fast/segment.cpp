@@ -23,8 +23,18 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #include "pnmfile.h"
 #include "segment-image.h"
 #include <string>
-
-/*int segment(float sigma, float k, int min_size, const char* inputStr, const char* outputStr){
+//int segment(int argc, char **argv) {
+int segment(float sigma, float k, int min_size, const char* inputStr, const char* outputStr){
+  /*if (argc != 6) {
+    fprintf(stderr, "usage: %s sigma k min input(ppm) output(ppm)\n", argv[0]);
+    return 1;
+  }
+  
+  float sigma = atof(argv[1]);
+  float k = atof(argv[2]);
+  int min_size = atoi(argv[3]);
+  string input = argv[4];
+  string output = argv[5];*/
 	
   printf("loading input image.\n");
   image<rgb> *input = loadPPM(inputStr);
@@ -38,5 +48,5 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
   printf("done! uff...thats hard work.\n");
 
   return 0;
-}*/
+}
 
