@@ -23,11 +23,14 @@
 
     <!-- Start Q.bo drivers -->
     <node name="qbo_arduqbo" pkg="qbo_arduqbo" type="qbo_arduqbo" output="screen" respawn="true">
-      <rosparam file="$(find qbo_arduqbo)/default_with_sensors_dynamixel.yaml" command="load" />
+      <rosparam file="$(find qbo_rgbd_slam)/qbo_driver_settings_graphSLAM.yaml" command="load" />
     </node>
     
     <!-- Add in head joint odometry -->
     <node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />
+
+    <!-- Add corrected pose tf publisher -->
+    <node name="qbo_corrected_pose_publisher" pkg="qbo_rgbd_slam" />
 
     <!-- Transform between base_footprint and the head --> 
     <node name="link" pkg="tf" type="static_transform_publisher" args="0.06 0 0.02 0 0 0 base_footprint base_link 100" />

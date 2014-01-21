@@ -17,7 +17,7 @@
 
     <!-- Start Q.bo drivers -->
     <node name="qbo_arduqbo" pkg="qbo_arduqbo" type="qbo_arduqbo" output="screen" respawn="true">
-      <rosparam file="$(find qbo_arduqbo)/default_with_sensors_dynamixel.yaml" command="load" />
+      <rosparam file="$(find qbo_rgbd_slam)/qbo_driver_settings_graphSLAM.yaml" command="load" />
     </node>
     
     <!-- Add in head joint odometry -->

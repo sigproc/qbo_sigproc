@@ -4,7 +4,7 @@ project(qbo_rgbd_slam)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED tf geometry_msgs nav_msgs)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -127,3 +127,6 @@ catkin_package(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+add_executable(qbo_corrected_pose_publisher src/qbo_corrected_pose_publisher.cpp)
+target_link_libraries(qbo_corrected_pose_publisher ${catkin_LIBRARIES})

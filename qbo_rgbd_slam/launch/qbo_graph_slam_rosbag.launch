@@ -1,0 +1,12 @@
+<launch>
+  <arg name="bag" default="/media/Edog/Rosbag/challenge.bag"/>
+  <node pkg="rosbag" type="play" name="rosbag" args="$(arg bag) --clock" />
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find qbo_rgbd_slam)/launch/graph_slam.rviz" />
+
+
+  <!-- Start the mapping nodes -->
+  <include file="$(find qbo_rgbd_slam)/launch/include/mapping.launch"/>
+
+
+</launch>

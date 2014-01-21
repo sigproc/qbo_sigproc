@@ -1,6 +1,24 @@
 <!-- Launches a keyframe-based 3D mapper-->
 
 <launch>
+    <!--Number of desired keypoints to detect in each image for RANSAC processing -->
+    <arg name="n_keypoints" default="200"/>
+    <!--Maximum iterations for pairwise RANSAC test-->
+    <arg name="max_ransac_iterations" default="2000"/>
+    <!--How many candidate keyframes will be tested against the query keyframe using a pairwise RANSAC test-->
+    <arg name="n_ransac_candidates " default="15"/>
+    <!--How many nearest neighbors are requested per keypoint from the kd-tree of all keypoints-->
+    <arg name="k_nearest_neighbors" default="15"/>
+    <!--How many inliers are required to pass the RANSAC test-->
+    <arg name="min_ransac_inliers" default="30"/>
+    <!--Maximum distance (in SURF descriptor space) between two features to be considered a correspondence candidate-->
+    <arg name="max_corresp_dist_desc" default="1.0"/>
+    <!--Maximum distance (in Euclidean metric space) between two features to be considered a correspondence candidate.-->
+    <arg name="max_corresp_dist_eucl" default="0.03"/> <!-- Used to be 0.03 -->
+    <!--If true, positive RANSAC results will be saved to file as images with keypoint correspondences-->
+    <arg name="save_ransac_results" default="false"/>
+    <!--The path where to save images if save_ransac_results is true-->
+    <arg name="ransac_results_path" default="$HOME"/>
 
 
   #### KEYFRAME MAPPING ###################################
@@ -8,20 +26,14 @@
   <node pkg="ccny_rgbd" type="keyframe_mapper_node" name="keyframe_mapper_node" 
     output="screen">
     
-    <!-- NOTE: if using data from OpenNI driver directly, (without 
-    ccny_rgbd/rgbd_image_proc"), then add the following remappings. 
-    Also add these to visual_odometry in visual_odometry.launch.
-
-    <remap from="/rgbd/depth" to="/camera/depth_registered/image_rect_raw"/>
-    <remap from="/rgbd/rgb"   to="/camera/rgb/image_rect_color"/>
-    <remap from="/rgbd/info"  to="/camera/rgb/camera_info"/>   
-    
-    -->
-    
-    <param name="kf_dist_eps"  value="0.25"/> <!-- 25 cm -->
-    <param name="kf_angle_eps" value="0.35"/> <!-- 20 deg -->
-    <param name="full_map_res" value="0.01"/>
-    <param name="max_range" value="7.0"/>
+    <param name="verbose" value="true"/>
+    <param name="online_graph_opt" value="true"/>
+    <param name="graph/min_temporal_distance_for_RANSAC" value="0"/>
+    <param name="graph/n_candidates" value="5"/>
+    <param name="kf_dist_eps"  value="0.25"/> <!-- 25 cm (used to be 25) -->
+    <param name="kf_angle_eps" value="0.35"/> <!-- 20 deg (used to be  20-->
+    <param name="full_map_res" value="0.1"/> <!-- used to be 0.01 -->
+    <param name="max_range" value="7"/> <!-- used to be 7 -->
     <param name="max_stdev" value="0.05"/>
   </node>
 
