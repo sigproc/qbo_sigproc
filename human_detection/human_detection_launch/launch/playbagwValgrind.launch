@@ -8,6 +8,6 @@
 
 	<node pkg="rosbag" type="play" name="rosbag" output="screen" args="-l $(arg bag_path)"/>
 #add '-r 0.1' to the args field to slow down the data stream by 10
-	<node pkg="human_detection" type = "human_detection_2" name="human_detection_2"/>
+	<node pkg="human_detection" type = "human_detection_2" name="human_detection_2" launch-prefix="valgrind --leak-check=full --log-file=/home/sam/cued-masters/valgrindlog.txt --show-reachable=yes"/>
 
 </launch>

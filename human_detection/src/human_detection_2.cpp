@@ -40,15 +40,97 @@ static const char WCANDIDATES[] = "Candidates";
 //prototype
 int segment(float sigma, float k, int min_size, cv::Mat image);
 
-//Use method of ImageTransport to create image 3 publishers
-image_transport::Publisher pub;
-image_transport::Publisher pubNormalIm;
-image_transport::Publisher pubDepthSeg;
-image_transport::Publisher pubNormalSeg;
-image_transport::Publisher pubcandidates;
+/**********************************************8
 
 
-void publish_image(image<rgb> *image, image_transport::Publisher publisher, cv_bridge::CvImagePtr in_msg, int alpha, const char* window, bool showwindow){
+***********************************************/
+
+class Human_Detector
+{
+  /*ros::NodeHandle nh_;
+  image_transport::ImageTransport it_;
+  image_transport::Subscriber image_sub_;
+  image_transport::Publisher image_pub_;*/
+
+	ros::NodeHandle nh_;
+	image_transport::ImageTransport it_;
+	image_transport::Subscriber sub_;
+	//Use method of ImageTransport to create all publishers
+	image_transport::Publisher pub_;
+	image_transport::Publisher pubNormalIm_;
+	image_transport::Publisher pubDepthSeg_;
+	image_transport::Publisher pubNormalSeg_;
+	image_transport::Publisher pubcandidates_;
+  
+public:
+  Human_Detector()
+    : it_(nh_)
+  {
+    // Subscrive to input video feed and publish output video feed
+    sub_ =it_.subscribe("/camera/depth/image", 1, &Human_Detector::imageCallback, this);
+
+	pub_ = it_.advertise("/camera/depth/segmented", 1);
+	pubNormalIm_ = it_.advertise("/camera/depth/normal", 1);
+	pubDepthSeg_ = it_.advertise("/camera/depth/dSeg",1);
+	pubNormalSeg_ = it_.advertise("/camera/depth/nSeg",1);
+	pubcandidates_ = it_.advertise("/human_detection/candidates", 1);
+
+    //OpenCV HighGUI call to create a display window on start-up.
+#if SHOWJOINTSEG
+    cv::namedWindow(WINDOW, CV_WINDOW_AUTOSIZE);
+#endif
+
+#if SHOWNORMALIM
+    cv::namedWindow(WNORMALIM, CV_WINDOW_AUTOSIZE);
+#endif
+
+#if SHOWDEPTHSEG
+	cv::namedWindow(WDEPTHSEG, CV_WINDOW_AUTOSIZE);
+#endif
+
+#if SHOWNORMALSEG
+	cv::namedWindow(WNORMALSEG, CV_WINDOW_AUTOSIZE);
+#endif
+
+#if SHOWCANDIDATES
+	cv::namedWindow(WCANDIDATES, CV_WINDOW_AUTOSIZE);
+#endif
+    
+  }
+
+  ~Human_Detector()
+  {
+	#if SHOWJOINTSEG
+		cv::destroyWindow(WINDOW);
+	#endif
+
+	#if SHOWNORMALIM
+		cv::destroyWindow(WNORMALIM);
+	#endif
+
+	#if SHOWDEPTHSEG
+		cv::destroyWindow(WDEPTHSEG);
+	#endif
+
+	#if SHOWNORMALSEG
+		cv::destroyWindow(WNORMALSEG);
+	#endif
+
+	#if SHOWCANDIDATES
+		cv::destroyWindow(WCANDIDATES);
+	#endif
+
+	//cv::destroyAllWindows();
+  }
+
+	void publish_image(image<rgb> *image, image_transport::Publisher publisher, cv_bridge::CvImagePtr in_msg, int alpha, const char* window, bool showwindow);
+
+	void imageCallback(const sensor_msgs::ImageConstPtr& original_image);
+	
+
+};
+
+void Human_Detector::publish_image(image<rgb> *image, image_transport::Publisher publisher, cv_bridge::CvImagePtr in_msg, int alpha, const char* window, bool showwindow){
 	//create RGB Mat
 	cv::Mat OutputBGRMat = cv::Mat::zeros(in_msg->image.size(),CV_8UC3);
 
@@ -70,17 +152,18 @@ void publish_image(image<rgb> *image, image_transport::Publisher publisher, cv_b
 	out_msg = cv_bridge::CvImage(in_msg->header, sensor_msgs::image_encodings::BGR8, OutputBGRMat);
 	//Display the image using OpenCV
     
-	//if(showwindow){
-		//cv::imshow(window, out_msg.image);
-	//}
+	if(showwindow){
+		cv::imshow(window, out_msg.image);
+	}
 
 	publisher.publish(out_msg.toImageMsg());
-}	
+}
+
 /***************************************************************
 
 *********************************************************************/
 //This function is called everytime a new image is published
-void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
+void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 {
 	//start of clock timing	
 	clock_t start = clock(), postPrep, postSeg, postMerge, postPost;
@@ -210,11 +293,11 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 	}
 
 
-	publish_image(outputIm, pub, in_msg, alpha, WINDOW, SHOWJOINTSEG);
-	publish_image(normalIm, pubNormalIm, in_msg, alpha, WNORMALIM, SHOWNORMALIM);
-	publish_image(depthseg, pubDepthSeg, in_msg, alpha, WDEPTHSEG, SHOWDEPTHSEG);
-	publish_image(normalseg, pubNormalSeg, in_msg, alpha, WNORMALSEG, SHOWNORMALSEG);
-	publish_image(candidates_image, pubcandidates, in_msg, alpha, WCANDIDATES, SHOWCANDIDATES);
+	publish_image(outputIm, pub_, in_msg, alpha, WINDOW, SHOWJOINTSEG);
+	publish_image(normalIm, pubNormalIm_, in_msg, alpha, WNORMALIM, SHOWNORMALIM);
+	publish_image(depthseg, pubDepthSeg_, in_msg, alpha, WDEPTHSEG, SHOWDEPTHSEG);
+	publish_image(normalseg, pubNormalSeg_, in_msg, alpha, WNORMALSEG, SHOWNORMALSEG);
+	publish_image(candidates_image, pubcandidates_, in_msg, alpha, WCANDIDATES, SHOWCANDIDATES);
 	
 	if(SHOWDEPTHIM){
 		//rescale for viewing
@@ -223,7 +306,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 		in_msg->image.convertTo(in_msg->image, CV_8UC1,255.0/maxval);	
 		cv::imshow(WDEPTHIM, in_msg->image);
 	}
-	//cv::waitKey(10);
+	cv::waitKey(10);
 
 	//Clean up image containers
 	delete inputIm;
@@ -256,70 +339,18 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 	
 }
 
-int main(int argc, char **argv)
+
+
+
+/********************************************************
+
+*******************************************************/
+
+int main(int argc, char** argv)
 {
-    
-        ros::init(argc, argv, "image_processor");
-  
-        ros::NodeHandle nh;
-    //Create an ImageTransport instance, initializing it with our NodeHandle.
-        image_transport::ImageTransport it(nh);
-    //OpenCV HighGUI call to create a display window on start-up.
-/*//#if SHOWJOINTSEG
-    cv::namedWindow(WINDOW, CV_WINDOW_AUTOSIZE);
-//#endif
-
-//#if SHOWNORMALIM
-    cv::namedWindow(WNORMALIM, CV_WINDOW_AUTOSIZE);
-//#endif
-
-//#if SHOWDEPTHSEG
-	cv::namedWindow(WDEPTHSEG, CV_WINDOW_AUTOSIZE);
-//#endif
-
-//#if SHOWNORMALSEG
-	cv::namedWindow(WNORMALSEG, CV_WINDOW_AUTOSIZE);
-//#endif
-
-//#if SHOWCANDIDATES
-	cv::namedWindow(WCANDIDATES, CV_WINDOW_AUTOSIZE);
-//#endif*/
-    
-    image_transport::Subscriber sub = it.subscribe("/camera/depth/image", 1, imageCallback);
-    //OpenCV HighGUI call to destroy a display window on shut-down.
-
-	pub = it.advertise("/camera/depth/segmented", 1);
-	pubNormalIm = it.advertise("/camera/depth/normal", 1);
-	pubDepthSeg = it.advertise("/camera/depth/dSeg",1);
-	pubNormalSeg = it.advertise("/camera/depth/nSeg",1);
-	pubcandidates = it.advertise("/human_detection/candidates", 1);
-// By Commenting these out our windows stay where we leave them ACTUALLY IT MAKES NO DIFFERENCE!
-/*//#if SHOWJOINTSEG
-	cv::destroyWindow(WINDOW);
-//#endif
-
-//#if SHOWNORMALIM
-    cv::destroyWindow(WNORMALIM);
-//#endif
-
-//#if SHOWDEPTHSEG
-    cv::destroyWindow(WDEPTHSEG);
-//#endif
-
-//#if SHOWNORMALSEG
-	cv::destroyWindow(WNORMALSEG);
-//#endif
-
-//#if SHOWCANDIDATES
-	cv::destroyWindow(WCANDIDATES);
-//#endif*/
-
-	cv::destroyAllWindows();
-
-        ros::spin();
-    //ROS_INFO is the replacement for printf/cout.
-    ROS_INFO("tutorialROSOpenCV::main.cpp::No error.");
- 
+  ros::init(argc, argv, "Human_Detector");
+  Human_Detector hd;
+  ros::spin();
+  return 0;
 }
-
 

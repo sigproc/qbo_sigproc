@@ -2,11 +2,11 @@
 #define CONFIG
 
 //Select which images to show from running
-#define SHOWDEPTHIM true
-#define SHOWDEPTHSEG true
-#define SHOWNORMALSEG true
+#define SHOWDEPTHIM false
+#define SHOWDEPTHSEG false
+#define SHOWNORMALSEG false
 #define SHOWNORMALIM false
-#define SHOWJOINTSEG true
+#define SHOWJOINTSEG false
 #define SHOWCANDIDATES true
 
 
