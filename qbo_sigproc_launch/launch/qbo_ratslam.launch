@@ -9,7 +9,8 @@
   <arg name="mono_camera_side" default="left" />
   <arg name="mono_camera_device" default="/dev/video0" />
   <arg name="rviz" default="true" />
-
+  <arg name="joypad" default="true" />
+  
   <arg name="extra_include" default="null" />
 
   <group if="$(arg rviz)">
@@ -56,17 +57,19 @@
     <!-- Add in head joint odometry -->
     <node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />
 
-	<group if="$(arg stereo)">
-	<include file="$(find qbo_sigproc_launch)/launch/include/stereo_cameras.launch" />
-	</group>
-	<group unless="$(arg stereo)">
-	<include file="$(find qbo_sigproc_launch)/launch/include/mono_camera.launch">
-	  <arg name="mono_camera_side" value="$(arg mono_camera_side)" />
-	  <arg name="mono_camera_device" default="$(arg mono_camera_device)" />
-	</include>
-	</group>
+  	<group if="$(arg stereo)">
+  	<include file="$(find qbo_sigproc_launch)/launch/include/stereo_cameras.launch" />
+  	</group>
+  	<group unless="$(arg stereo)">
+  	<include file="$(find qbo_sigproc_launch)/launch/include/mono_camera.launch">
+  	  <arg name="mono_camera_side" value="$(arg mono_camera_side)" />
+  	  <arg name="mono_camera_device" default="$(arg mono_camera_device)" />
+  	</include>
+  	</group>
 
-
+    <group if="$(arg joypad)">
+       <include file="$(find qbo_joypad)/launch/joypad.launch"/>
+    </group>
 
     <include file="$(find qbo_sigproc_launch)/launch/include/$(arg extra_include).launch" />
   </group>
