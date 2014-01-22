@@ -140,10 +140,19 @@ def callback(data):
         
     #if rb is released, stop the robot
     else:
-        move(pub,0,0) 
+        if data.buttons[4]==1: #if lb is held
+            move(pub,data.axes[1]*0.3,0.5*(data.axes[5]-data.axes[2]))    # the 0.3 is a carefully tuned scaling factor to stop the Qbo from falling over backwards                              
+        else:
+            move(pub,0,0) 
+	
+	
+    if((inverted=='true') & data.buttons[4]==1): # if lb is held triggers are used for steering not eyelids
+        head(joints_pub,data.axes[3],data.axes[4],0,0)
+        
+    else:
+        head(joints_pub,data.axes[3],-data.axes[4],0,0)
 
-
-    if(inverted=='true'):
+    if((inverted=='true')& data.buttons[4]==0):
         head(joints_pub,data.axes[3],data.axes[4],data.axes[2],data.axes[5])
         
     else:
