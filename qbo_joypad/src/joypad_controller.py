@@ -151,13 +151,14 @@ def callback(data):
         
     else:
         head(joints_pub,data.axes[3],-data.axes[4],0,0)
-
-    if(inverted=='true'):
-        head(joints_pub,data.axes[3],data.axes[4],data.axes[2],data.axes[5])
-        
     else:
-        head(joints_pub,data.axes[3],-data.axes[4],data.axes[2],data.axes[5])
-    
+            
+        if(inverted=='true'):
+            head(joints_pub,data.axes[3],data.axes[4],data.axes[2],data.axes[5])
+            
+        else:
+            head(joints_pub,data.axes[3],-data.axes[4],data.axes[2],data.axes[5])
+        
 
     #Mouth
     #We now need to check for wired vs wireless controllers
