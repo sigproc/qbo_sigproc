@@ -152,7 +152,7 @@ def callback(data):
     else:
         head(joints_pub,data.axes[3],-data.axes[4],0,0)
 
-    if((inverted=='true'& data.buttons[4]==0)):
+    if((inverted=='true')& data.buttons[4]==0):
         head(joints_pub,data.axes[3],data.axes[4],data.axes[2],data.axes[5])
         
     else:
