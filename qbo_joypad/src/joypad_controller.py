@@ -140,7 +140,12 @@ def callback(data):
         
     #if rb is released, stop the robot
     else:
-        move(pub,0,0) 
+        if data.buttons[4]==1:
+            move(pub,data.axes[1]*0.3,-1*data.buttons[2]+1*data.buttons[1])    # the 0.3 is a carefully tuned scaling factor to stop the Qbo from falling over backwards                              
+        else:
+            move(pub,0,0) 
+	
+	
 
 
     if(inverted=='true'):
