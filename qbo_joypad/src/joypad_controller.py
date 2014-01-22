@@ -146,7 +146,7 @@ def callback(data):
             move(pub,0,0) 
 	
 	
-    if((inverted=='true') && data.buttons[4]==1): # if lb is held triggers are used for steering not eyelids
+    if((inverted=='true') & data.buttons[4]==1): # if lb is held triggers are used for steering not eyelids
         head(joints_pub,data.axes[3],data.axes[4],0,0)
         
     else:
