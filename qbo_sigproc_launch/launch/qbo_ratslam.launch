@@ -33,7 +33,7 @@
 
   <node pkg="rosbag" type="record" name="record" args="/test/ExperienceMap/Map /test/ExperienceMap/RobotPose /test/LocalView/Template /test/PoseCell/TopologicalAction -O ratslam_out.bag" />
 
-  <node pkg="rosbag" type="record" name="recordbag" args="/test/camera/image/compressed /test/ExperienceMap/Map /test/ExperienceMap/RobotPose /test/LocalView/Template /test/PoseCell/Topol/test/ExperienceMap/Map /test/ExperienceMap/RobotPose /test/LocalView/Template /test/PoseCell/TopologicalActionogicalAction -O RatslamRecord.bag" />
+  <!-- node pkg="rosbag" type="record" name="recordbag" args="/test/camera/image/compressed /test/ExperienceMap/Map /test/ExperienceMap/RobotPose /test/LocalView/Template /test/PoseCell/Topol/test/ExperienceMap/Map /test/ExperienceMap/RobotPose /test/LocalView/Template /test/PoseCell/TopologicalActionogicalAction -O RatslamRecord.bag" /-->
 
   <!--node pkg="teleop_twist_keyboard" name="Keyboard_Control" type="teleop_twist_keyboard.py" launch-prefix="terminator -e"/-->
 
