@@ -27,7 +27,7 @@
   <node name="RatSLAMLocalViewCells" pkg="ratslam_ros" type="ratslam_lv" args="$(find ratslam_ros)/config/config_test.txt _image_transport:=compressed" cwd="node" required="true" />
   <node name="RatSLAMPoseCells" pkg="ratslam_ros" type="ratslam_pc" args="$(find ratslam_ros)/config/config_test.txt _image_transport:=compressed" cwd="node" required="true" />
   <node name="RatSLAMExperienceMap" pkg="ratslam_ros" type="ratslam_em" args="$(find ratslam_ros)/config/config_test.txt _image_transport:=compressed" cwd="node" required="true" />
-  <node name="RatSLAMVisualOdometry" pkg="ratslam_ros" type="ratslam_vo" args="$(find ratslam_ros)/config/config_test.txt _image_transport:=compressed" cwd="node" required="true" />
+  <!-- node name="RatSLAMVisualOdometry" pkg="ratslam_ros" type="ratslam_vo" args="$(find ratslam_ros)/config/config_test.txt _image_transport:=compressed" cwd="node" required="true" /-->
   
   <!--node pkg="rqt_plot" type="rqt_plot" name="plot_vt_em" args="/test/LocalView/Template/current_id,/test/PoseCell/TopologicalAction/dest_id" /-->
 
