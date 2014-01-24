@@ -8,7 +8,7 @@
   <arg name="stereo" default="false" />
   <arg name="mono_camera_side" default="left" />
   <arg name="mono_camera_device" default="/dev/video0" />
-  <arg name="rviz" default="true" />
+  <arg name="rviz" default="false" />
   <arg name="joypad" default="true" />
   
   <arg name="extra_include" default="null" />
