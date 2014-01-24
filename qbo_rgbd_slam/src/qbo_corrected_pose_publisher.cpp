@@ -1,9 +1,9 @@
 #include "ros/ros.h"
 #include <iostream>
 #include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/TransformStamped.h>
-#include <nav_msgs/Odometry.h>
 #include <string>
 
 class CorrectedPosePublisher
@@ -15,33 +15,35 @@ public:
   	nh_private_(nh_private)
 	{
 		initParams();
-		odom_sub_ = nh_.subscribe(odom_topic_, 1, &CorrectedPosePublisher::publish_corrected_pose,this);
 		pose_correction_sub_ = nh_.subscribe(correction_topic_, 1, &CorrectedPosePublisher::update_pose_correction,this);
-		ROS_INFO("Corrected Pose Published initialized");
+		timer_ = nh.createTimer(ros::Duration(1/rate_),&CorrectedPosePublisher::publish_corrected_pose,this);
+    ROS_INFO("Corrected Pose Published initialized");
 	}
 
 	~CorrectedPosePublisher(){}
 
 private:
 	void initParams(void);
-  void publish_corrected_pose(const nav_msgs::Odometry & odom_msg);
+  void publish_corrected_pose(const ros::TimerEvent& e);
   void update_pose_correction(const geometry_msgs::Transform & pose_correction_msg);
-	ros::Subscriber odom_sub_;
   ros::Subscriber pose_correction_sub_;
 	ros::NodeHandle nh_;                ///< the public nodehandle
  	ros::NodeHandle nh_private_;        ///< the private nodehandle
 	tf::TransformBroadcaster pose_broadcaster_;
-	std::string odom_topic_;
+  tf::TransformListener tf_listener_;
   std::string correction_topic_;
   std::string fixed_frame_id_;
   std::string child_frame_id_;
+  std::string corrected_child_frame_id_;
   tf::Transform correction_tf_;
+  ros::Timer timer_;
+  double rate_;
 };
 
 void CorrectedPosePublisher::initParams(void){
-  if (!nh_private_.getParam ("odom_topic", odom_topic_)){
-    odom_topic_="odom";
-    ROS_WARN("Need to set odom_topic argument! Setting odom_topic to odom");
+  if (!nh_private_.getParam ("rate", rate_)){
+    rate_=10.0;
+    ROS_WARN("Need to set rate argument! Setting rate to 15 Hz");
   }
   if (!nh_private_.getParam ("correction_topic", correction_topic_)){
     correction_topic_ = "pose_correction_tfs";
@@ -54,30 +56,46 @@ void CorrectedPosePublisher::initParams(void){
   }
    if (!nh_private_.getParam ("child_frame_id", child_frame_id_))
   {
-    child_frame_id_ = "base_footprint";  
-    ROS_WARN("Need to set child_frame_id argument! Setting child_frame_id to base_footprint");
+    child_frame_id_ = "camera_link";  
+    ROS_WARN("Need to set child_frame_id argument! Setting child_frame_id to camera_link");
+  }
+  if (!nh_private_.getParam ("corrected_child_frame_id", corrected_child_frame_id_))
+  {
+    corrected_child_frame_id_ = "camera_link_corrected";  
+    ROS_WARN("Need to set corrected_child_frame_id argument! Setting corrected_child_frame_id to camera_link_corrected");
   }
 
   correction_tf_.setIdentity(); 
 
 }
 
-void CorrectedPosePublisher::publish_corrected_pose(const nav_msgs::Odometry & odom_msg){
-  tf::Transform correctedtf;
-  tf::StampedTransform wheel_odom_tf;
-  tf::poseMsgToTF(odom_msg.pose.pose, wheel_odom_tf);
-  correctedtf.mult(correction_tf_,wheel_odom_tf);
-  geometry_msgs::Transform correctedtfmsg;
-  tf::transformTFToMsg(correctedtf,correctedtfmsg);
+void CorrectedPosePublisher::publish_corrected_pose(const ros::TimerEvent& e){
+  ROS_INFO("TimerEvent triggered \n");
+  //Get wheel odometry based transform between fixed frame and camera
+  tf::StampedTransform fixed_to_cam_tf;
+  tf::StampedTransform fixed_to_cam_corrected_tf;
+  try{
+    tf_listener_.waitForTransform(
+      fixed_frame_id_, child_frame_id_, ros::Time(0), ros::Duration(5.0));
+    tf_listener_.lookupTransform(
+      fixed_frame_id_, child_frame_id_, ros::Time(0), fixed_to_cam_tf);  
+  }
+  catch(...)
+  {
+    ROS_INFO("Time out! \n");
+    return;
+  }
+  
+  //apply correction to transform
+  fixed_to_cam_corrected_tf.stamp_ = fixed_to_cam_tf.stamp_;
+  fixed_to_cam_corrected_tf.frame_id_ = fixed_frame_id_;
+  fixed_to_cam_corrected_tf.child_frame_id_ = corrected_child_frame_id_;
+  fixed_to_cam_corrected_tf.mult(correction_tf_,fixed_to_cam_tf);
 
-  geometry_msgs::TransformStamped odom_trans;
-  
-  odom_trans.header = odom_msg.header;
-  odom_trans.header.frame_id = fixed_frame_id_;
-  odom_trans.child_frame_id = child_frame_id_;
-  odom_trans.transform = correctedtfmsg;
-  
-  pose_broadcaster_.sendTransform(odom_trans);
+  geometry_msgs::TransformStamped fixed_to_cam_corrected_msg;
+  tf::transformStampedTFToMsg(fixed_to_cam_corrected_tf,fixed_to_cam_corrected_msg);
+
+  pose_broadcaster_.sendTransform(fixed_to_cam_corrected_msg);
   ROS_INFO("Broadcast corrected fixed to moving frame transform! \n");
 }
 
