@@ -17,7 +17,7 @@ controllers: {
         rate: 15.0,
         topic: /cmd_vel,
         odom_topic: /odom,
-        tf_odom_broadcast: false
+        tf_odom_broadcast: true
     },
     "m_con": {
         type: mouth_controller,

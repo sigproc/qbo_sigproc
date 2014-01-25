@@ -19,7 +19,7 @@
 
     <!-- Start Q.bo drivers -->
     <node name="qbo_arduqbo" pkg="qbo_arduqbo" type="qbo_arduqbo" output="screen" respawn="true">
-      <rosparam file="$(find qbo_rgbd_slam)/lauch/include/qbo_driver_settings_graphSLAM.yaml" command="load" />
+      <rosparam file="$(find qbo_rgbd_slam)/launch/include/qbo_driver_settings_graphSLAM.yaml" command="load" />
     </node>
     
     <!-- Add in head joint odometry -->

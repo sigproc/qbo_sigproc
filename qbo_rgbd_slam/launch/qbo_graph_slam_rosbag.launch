@@ -1,5 +1,5 @@
 <launch>
-  <arg name="bag" default="/media/Edog/Rosbag/dpo.bag"/>
+  <arg name="bag" default="/media/Edog/Rosbag/throttletest.bag"/>
   <node pkg="rosbag" type="play" name="rosbag" args="$(arg bag) --clock" />
 
  	
