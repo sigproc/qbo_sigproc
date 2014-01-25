@@ -13,7 +13,7 @@
 #ifndef MERGENFILTER_H
 #define MERGENFILTER_H
 
-std::vector<candidate> merge_and_filter(image<float> *im, universe * u, int width, int height){
+std::vector<candidate> merge_and_filter(image<float> *im, universe * u, int width, int height, cv::Mat &depthim){
 	std::vector<candidate> candidates;
 	std::map<int,candidate> components;
 
@@ -130,6 +130,14 @@ std::vector<candidate> merge_and_filter(image<float> *im, universe * u, int widt
 	}
 	//*/
 
+	//finally convert images into candidate images and calculate their bounding boxes
+	for(std::vector<candidate>::iterator itc = candidates.begin(); itc != candidates.end(); itc++){
+		if( (!itc-> erased) ){
+			//initialise the bounding box
+			itc->set_boundingBox();
+			itc->create_candidate_image(depthim);
+		}
+	}
 	return candidates;
 }
 

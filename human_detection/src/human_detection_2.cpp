@@ -61,6 +61,7 @@ class Human_Detector
 	image_transport::Publisher pubDepthSeg_;
 	image_transport::Publisher pubNormalSeg_;
 	image_transport::Publisher pubcandidates_;
+
   
 public:
   Human_Detector()
@@ -69,10 +70,10 @@ public:
     // Subscrive to input video feed and publish output video feed
     sub_ =it_.subscribe("/camera/depth/image", 1, &Human_Detector::imageCallback, this);
 
-	pub_ = it_.advertise("/camera/depth/segmented", 1);
-	pubNormalIm_ = it_.advertise("/camera/depth/normal", 1);
-	pubDepthSeg_ = it_.advertise("/camera/depth/dSeg",1);
-	pubNormalSeg_ = it_.advertise("/camera/depth/nSeg",1);
+	pub_ = it_.advertise("/human_detection/segmentation", 1);
+	pubNormalIm_ = it_.advertise("/human_detection/normal", 1);
+	pubDepthSeg_ = it_.advertise("/human_detection/depth_Seg",1);
+	pubNormalSeg_ = it_.advertise("/human_detection/normal_seg",1);
 	pubcandidates_ = it_.advertise("/human_detection/candidates", 1);
 
     //OpenCV HighGUI call to create a display window on start-up.
@@ -123,14 +124,14 @@ public:
 	//cv::destroyAllWindows();
   }
 
-	void publish_image(image<rgb> *image, image_transport::Publisher publisher, cv_bridge::CvImagePtr in_msg, int alpha, const char* window, bool showwindow);
+	void publish_image(image<rgb> *image, image_transport::Publisher publisher, cv_bridge::CvImagePtr in_msg, int alpha, const char* window, bool showwindow,std::list<cv::Rect> boundingBoxes);
 
 	void imageCallback(const sensor_msgs::ImageConstPtr& original_image);
 	
 
 };
 
-void Human_Detector::publish_image(image<rgb> *image, image_transport::Publisher publisher, cv_bridge::CvImagePtr in_msg, int alpha, const char* window, bool showwindow){
+void Human_Detector::publish_image(image<rgb> *image, image_transport::Publisher publisher, cv_bridge::CvImagePtr in_msg, int alpha, const char* window, bool showwindow, std::list<cv::Rect> boundingBoxes){
 	//create RGB Mat
 	cv::Mat OutputBGRMat = cv::Mat::zeros(in_msg->image.size(),CV_8UC3);
 
@@ -147,7 +148,11 @@ void Human_Detector::publish_image(image<rgb> *image, image_transport::Publisher
 	}
 
     OutputBGRMat= _OutputBGRMat;
-
+#if SHOWBOXES
+	for(std::list<cv::Rect>::iterator it = boundingBoxes.begin(); it != boundingBoxes.end(); it++){
+		cv::rectangle(OutputBGRMat, *it, cv::Scalar(0,0,255), 2);
+	}
+#endif
 	cv_bridge::CvImage out_msg;
 	out_msg = cv_bridge::CvImage(in_msg->header, sensor_msgs::image_encodings::BGR8, OutputBGRMat);
 	//Display the image using OpenCV
@@ -263,7 +268,7 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 	postSeg = clock();
 
 	//merge regions
-	std::vector<candidate> candidates = merge_and_filter(inputIm, u_segmented, sub_width, sub_height);
+	std::vector<candidate> candidates = merge_and_filter(inputIm, u_segmented, sub_width, sub_height, in_msg->image);
 
 	postMerge = clock();
 
@@ -277,10 +282,13 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 		}
 	}
 	
+	std::list<cv::Rect> boundingBoxes;
+	
 	//now fill in image with remaining candidates
 	for(std::vector<candidate>::iterator it = candidates.begin(); it != candidates.end(); it++) {
 		//it->add_to_image(candidates_image, random_rgb());
 		if( !(it->erased) ){
+			boundingBoxes.push_back(it->boundingBox);
 			rgb colour = random_rgb();		
 			for(std::vector<cv::Point3f>::iterator itp = it->pts.begin(); itp != it->pts.end(); itp++){
 				int x = itp-> x;
@@ -291,22 +299,44 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 			}
 		}
 	}
-
-
-	publish_image(outputIm, pub_, in_msg, alpha, WINDOW, SHOWJOINTSEG);
-	publish_image(normalIm, pubNormalIm_, in_msg, alpha, WNORMALIM, SHOWNORMALIM);
-	publish_image(depthseg, pubDepthSeg_, in_msg, alpha, WDEPTHSEG, SHOWDEPTHSEG);
-	publish_image(normalseg, pubNormalSeg_, in_msg, alpha, WNORMALSEG, SHOWNORMALSEG);
-	publish_image(candidates_image, pubcandidates_, in_msg, alpha, WCANDIDATES, SHOWCANDIDATES);
-	
+	//display images before showing candidates
+	double minval, maxval;
 	if(SHOWDEPTHIM){
 		//rescale for viewing
-		double minval, maxval;
 	    cv::minMaxIdx(in_msg->image, &minval, &maxval);
-		in_msg->image.convertTo(in_msg->image, CV_8UC1,255.0/maxval);	
+		in_msg->image.convertTo(in_msg->image, CV_8UC1,255.0/maxval);
+#if SHOWBOXES
+		for(std::list<cv::Rect>::iterator it = boundingBoxes.begin(); it != boundingBoxes.end(); it++){
+			cv::rectangle(in_msg->image, *it, cv::Scalar(0,0,255), 2);
+		}
+#endif
 		cv::imshow(WDEPTHIM, in_msg->image);
 	}
-	cv::waitKey(10);
+	if( SHOWDEPTHIM ||SHOWDEPTHSEG || SHOWNORMALSEG || SHOWNORMALIM || SHOWJOINTSEG || SHOWCANDIDATES ){
+		cv::waitKey(10);
+	}
+	
+	publish_image(outputIm, pub_, in_msg, alpha, WINDOW, SHOWJOINTSEG, boundingBoxes);
+	publish_image(normalIm, pubNormalIm_, in_msg, alpha, WNORMALIM, SHOWNORMALIM, boundingBoxes);
+	publish_image(depthseg, pubDepthSeg_, in_msg, alpha, WDEPTHSEG, SHOWDEPTHSEG, boundingBoxes);
+	publish_image(normalseg, pubNormalSeg_, in_msg, alpha, WNORMALSEG, SHOWNORMALSEG, boundingBoxes);
+	publish_image(candidates_image, pubcandidates_, in_msg, alpha, WCANDIDATES, SHOWCANDIDATES, boundingBoxes);
+
+	cv::waitKey(1000);
+
+
+	//show candidates
+	for(std::vector<candidate>::iterator it = candidates.begin(); it != candidates.end(); it++) {
+		if( !(it->erased) ){
+			//cv::minMaxIdx(it->im, &minval, &maxval);
+			cv::Mat display;// = cv::Mat(cv::Size(it->im.size().width, it->im.size().height), CV_32FC1);
+			it->im.convertTo(display, CV_8UC1,255.0/maxval);
+//			display = it->im;
+			//std::cout << "display width: " << display.size().width << ", height: " << display.size().height << std::endl;*/
+			cv::imshow("Current Candidate", display);
+			cv::waitKey(1000);
+		}
+	}
 
 	//Clean up image containers
 	delete inputIm;
@@ -325,14 +355,14 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 	int Seg_ms = (postSeg - postPrep) * 1000 / CLOCKS_PER_SEC;
 	int Merge_ms = (postMerge -postSeg) * 1000 / CLOCKS_PER_SEC;
 
-	std::cout << "Time taken to process each frame: " << std::endl;
+	/*std::cout << "Time taken to process each frame: " << std::endl;
 	std::cout << "Pre Processing: " << pre_ms/1000 << "s " << pre_ms%1000 << "ms " << std::endl;
 	std::cout << "Seg Processing: " << Seg_ms/1000 << "s " << Seg_ms%1000 << "ms " << std::endl;
 	std::cout << "Merge Processing: " << Merge_ms/1000 << "s " << Merge_ms%1000 << "ms " << std::endl;
 
 	postPost = clock();
 	int post_ms = (postPost - postMerge)* 1000 / CLOCKS_PER_SEC;
-	std::cout << "Post Processing: " << post_ms/1000 << "s " << post_ms%1000 << "ms " << std::endl;
+	std::cout << "Post Processing: " << post_ms/1000 << "s " << post_ms%1000 << "ms " << std::endl;*/
 
 	std::cout << std::endl << "END OF FRAME " << std::endl << std::endl;
 

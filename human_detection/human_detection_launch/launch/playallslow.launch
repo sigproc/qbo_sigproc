@@ -9,5 +9,6 @@
 	<node pkg="rosbag" type="play" name="rosbag" output="screen" args="-l $(arg bag_path) -r 0.1"/>
 #add '-r 0.1' to the args field to slow down the data stream by 10
 	<node pkg="human_detection" type = "human_detection_2" name="human_detection_2"/>
+	<node pkg="image_view" type = "image_view" name="image_view" args="image:=/human_detection/candidates"/>
 
 </launch>

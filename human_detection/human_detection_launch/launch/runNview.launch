@@ -1,0 +1,6 @@
+<launch>
+	<node pkg="human_detection" type = "human_detection_2" name="human_detection_2"/>
+	<node pkg="image_view" type = "image_view" name="candidates_view" args="image:=/human_detection/candidates"/>
+	<node pkg="image_view" type = "image_view" name="segmented_view" args="image:=/human_detection/segmentation"/>
+	<node pkg="image_view" type = "image_view" name="depth_view" args="image:=/camera/depth/image"/>
+</launch>

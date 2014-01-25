@@ -101,11 +101,11 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(human_detection src/human_detection.cpp src/segment_depth/segment.cpp src/segment_depth/segment-image.h src/segment_depth/segment-graph.h src/segment_depth/disjoint-set.h src/segment_depth/pnmfile.h)
-target_link_libraries(human_detection ${catkin_LIBRARIES})
+#add_executable(human_detection src/human_detection.cpp src/segment_depth/segment.cpp src/segment_depth/segment-image.h src/segment_depth/segment-graph.h src/segment_depth/disjoint-set.h src/segment_depth/pnmfile.h)
+#target_link_libraries(human_detection ${catkin_LIBRARIES})
 
-add_executable(human_detection1 src/human_detection.cpp src/segment_depth/segment.cpp src/segment_depth/segment-image.h src/segment_depth/segment-graph.h src/segment_depth/disjoint-set.h src/segment_depth/pnmfile.h src/merge_and_filter/merge_and_filter.h src/merge_and_filter/candidate.h)
-target_link_libraries(human_detection1 ${catkin_LIBRARIES})
+#add_executable(human_detection1 src/human_detection.cpp src/segment_depth/segment.cpp src/segment_depth/segment-image.h src/segment_depth/segment-graph.h src/segment_depth/disjoint-set.h src/segment_depth/pnmfile.h src/merge_and_filter/merge_and_filter.h src/merge_and_filter/candidate.h)
+#target_link_libraries(human_detection1 ${catkin_LIBRARIES})
 
 add_executable(human_detection_2 src/human_detection_2.cpp src/segment_depth/segment.cpp src/segment_depth/segment-image.h src/segment_depth/segment-graph.h src/segment_depth/disjoint-set.h src/segment_depth/pnmfile.h src/merge_and_filter/merge_and_filter.h src/merge_and_filter/candidate.h)
 target_link_libraries(human_detection_2 ${catkin_LIBRARIES})
