@@ -19,7 +19,7 @@
 
     <!-- Start Q.bo drivers -->
     <node name="qbo_arduqbo" pkg="qbo_arduqbo" type="qbo_arduqbo" output="screen" respawn="true">
-      <rosparam file="$(find qbo_rgbd_slam)/qbo_driver_settings_graphSLAM.yaml" command="load" />
+      <rosparam file="$(find qbo_rgbd_slam)/lauch/include/qbo_driver_settings_graphSLAM.yaml" command="load" />
     </node>
     
     <!-- Add in head joint odometry -->
@@ -31,9 +31,12 @@
     <!-- Our camera is slightly on the skew, hence the slight roll -->
     <node name="depth_camera" pkg="tf" type="static_transform_publisher" args="0.02 0 0.13 0 0 0.04 head camera_link 100" />
 
+    <node pkg="topic_tools" type="throttle" name="thr1" args="messages /camera/depth_registered/hw_registered/image_rect_raw 10.0"/>
+    <node pkg="topic_tools" type="throttle" name="thr2" args="messages /camera/rgb/image_rect_color 10.0"/>
+    <node pkg="topic_tools" type="throttle" name="thr3" args="messages /camera/depth/camera_info /camera/depth_registered/points  1.0"/>
+
      <node pkg="rosbag" type="rosbag" name="rosbag_record_cam"
-       args="record -o /tf /odom /camera/depth_registered/hw_registered/image_rect_raw /camera/depth_registered/sw_registered/image_rect_raw /camera/depth/camera_info /camera/depth_registered/points
- /joint_states /camera/rgb/image_rect_color"/>
+       args="record -o /tf /odom /camera/depth_registered/hw_registered/image_rect_raw_throttle /camera/depth/camera_info /camera/depth_registered/points_throttle /joint_states /camera/rgb/image_rect_color_throttle"/>
 
   </group>
 </launch>

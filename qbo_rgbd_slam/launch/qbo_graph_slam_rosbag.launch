@@ -1,8 +1,8 @@
 <launch>
-  <arg name="bag" default="/media/Edog/Rosbag/bigloop.bag"/>
+  <arg name="bag" default="/media/Edog/Rosbag/dpo.bag"/>
   <node pkg="rosbag" type="play" name="rosbag" args="$(arg bag) --clock" />
 
- 
+ 	
 
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find qbo_rgbd_slam)/launch/graph_slam.rviz" />
@@ -16,5 +16,16 @@
 
   <node name="correction_pub" pkg="qbo_rgbd_slam" type="qbo_corrected_pose_publisher" />
 
+  	<node pkg="nodelet" type="nodelet" args="manager"
+        name="record_player_manager" output="screen"/>
+
+  	<node pkg="nodelet" type="nodelet" name="cloudify"
+        args="load depth_image_proc/point_cloud_xyzrgb record_player_manager --no-bond">
+    <remap from="depth_registered/image_rect" to="/camera/depth_registered/hw_registered/image_rect_raw_throttle"/>
+    <remap from="depth_registered/points" to="camera/depth_registered/points"/>
+    <remap from="rgb/image_rect_color" to="/camera/rgb/image_rect_color_throttle"/>
+    <remap from="rgb/camera_info" to="/camera/depth/camera_info"/>
+	
+	</node>
 
 </launch>
