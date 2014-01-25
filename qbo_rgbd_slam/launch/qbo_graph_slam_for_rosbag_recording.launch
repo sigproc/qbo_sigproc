@@ -7,7 +7,9 @@
       env-loader="ROS_HOSTNAME=$(arg qbo_address) ~/cued-masters/devel/env.sh" />
 
     <!-- Start the openni driver -->
-    <include file="$(find qbo_rgbd_slam)/launch/include/ccny_openni.launch"/>
+    <include file="$(find openni2_launch)/launch/openni2.launch">
+      <arg name="depth_registration" value="true" />
+    </include>
 
     <!-- Start the joypay controller -->
     <group>
@@ -28,6 +30,10 @@
 
     <!-- Our camera is slightly on the skew, hence the slight roll -->
     <node name="depth_camera" pkg="tf" type="static_transform_publisher" args="0.02 0 0.13 0 0 0.04 head camera_link 100" />
+
+     <node pkg="rosbag" type="rosbag" name="rosbag_record_cam"
+       args="record -o /tf /odom /camera/depth_registered/hw_registered/image_rect_raw /camera/depth_registered/sw_registered/image_rect_raw /camera/depth/camera_info /camera/depth_registered/points
+ /joint_states /camera/rgb/image_rect_color"/>
 
   </group>
 </launch>
