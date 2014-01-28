@@ -23,7 +23,7 @@
 
   <!-- remap from="/stereo/left/image_mono/compressed" to="/test/camera/image/compressed"/ -->
   <node name="drop" pkg="topic_tools" type="drop" args="/stereo/left/image_mono/compressed 2 3  /test/camera/image/compressed"/>
-  < remap from="/odom" to="/test/odom"/>
+  <remap from="/odom" to="/test/odom" />
   
 
   <node name="RatSLAMLocalViewCells" pkg="ratslam_ros" type="ratslam_lv" args="$(find ratslam_ros)/config/config_test.txt _image_transport:=compressed" cwd="node" required="true" />
