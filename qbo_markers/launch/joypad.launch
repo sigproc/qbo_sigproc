@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<!-- Starts a node which places a marker at the first Ratslam experience -->
+<launch>
+   <node name="$(anon waypoint)" pkg="qbo_markers" type="place_marker.cpp"/>
+</launch>

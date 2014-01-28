@@ -1,0 +1,8 @@
+<launch>
+	<!-- Starts a node which places a marker at the first Ratslam experience -->
+	<arg name="marker_no" default="1" />
+
+	<param name="marker_no" value="$(arg marker_no)" />
+	<node name="$(anon waypoint)" pkg="qbo_markers" type="place_marker"/>
+
+</launch>
