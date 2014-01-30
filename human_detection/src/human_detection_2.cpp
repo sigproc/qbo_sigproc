@@ -12,6 +12,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include "segment_depth/segment.h"
 #include "merge_and_filter/merge_and_filter.h"
+#include "classification/descriptor.h"
 
 #include "config.h"
 
@@ -284,9 +285,8 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 	
 	std::list<cv::Rect> boundingBoxes;
 	
-	//now fill in image with remaining candidates
+	//now fill in image with remaining candidates and calc
 	for(std::vector<candidate>::iterator it = candidates.begin(); it != candidates.end(); it++) {
-		//it->add_to_image(candidates_image, random_rgb());
 		if( !(it->erased) ){
 			boundingBoxes.push_back(it->boundingBox);
 			rgb colour = random_rgb();		
@@ -328,12 +328,21 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 	//show candidates
 	for(std::vector<candidate>::iterator it = candidates.begin(); it != candidates.end(); it++) {
 		if( !(it->erased) ){
-			//cv::minMaxIdx(it->im, &minval, &maxval);
-			cv::Mat display;// = cv::Mat(cv::Size(it->im.size().width, it->im.size().height), CV_32FC1);
+			descriptor candidate_descriptor = descriptor(it->im);
+			candidate_descriptor.compute_descriptor();
+			candidate_descriptor.check_human();
+			cv::Mat display;
+			/*cv::Mat display_cells(it->im.size(),CV_8UC1);
+			for(int x = 0; x < display_cells.cols; x++){
+				for(int y = 0; y < display_cells.rows; y++){
+					display_cells.at<uchar>(cv::Point(x,y)) = candidate_descriptor.grad_mag.at<float>(cv::Point(x/16,y/16));
+				}
+			}
+			double maxval2;
+			cv::minMaxIdx(candidate_descriptor.grad_mag, &minval, &maxval2);*/
 			it->im.convertTo(display, CV_8UC1,255.0/maxval);
-//			display = it->im;
-			//std::cout << "display width: " << display.size().width << ", height: " << display.size().height << std::endl;*/
 			cv::imshow("Current Candidate", display);
+			cv::imshow("Candidate Cell Magnitudes", candidate_descriptor.grad_mag);
 			cv::waitKey(1000);
 		}
 	}

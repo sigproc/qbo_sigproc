@@ -176,68 +176,47 @@ void candidate::create_candidate_image(cv::Mat &depthim){
 	}
 	
 	//now expand with square kernel, using the openCv dilation function
-	cv::Mat element = getStructuringElement( cv::MORPH_RECT, cv::Size( 5,5 ));
+	cv::Mat element = getStructuringElement( cv::MORPH_RECT, cv::Size( DILATING_SCALE,DILATING_SCALE ));
 	// Apply the dilation operation
 	dilate( nscm, nscm, element);
+
+	//im = nscm;
 
 	//and fill in candidate region with pels from the original image
 	cv::Mat fsci = cv::Mat::zeros(cv::Size(ALPHA*width*scaling, ALPHA*height*scaling), CV_32FC1); //final Scale Candidate image
 //	cv::Mat ints = cv::Mat::zeros(cv::Size(ALPHA*width*scaling, ALPHA*height*scaling), CV_8UC1); //final Scale Candidate image
+	
+	//int lastcelly;
 
-	//find bounds
-	int xbound = (fsci.size().width)/(ALPHA*scaling)-1;
-	int ybound = (fsci.size().height)/(ALPHA*scaling)-1;
-
-	for(int cellx = 0; cellx < xbound; cellx++){
-		for(int celly = 0; celly < ybound; celly++){
-			//if mask is 1, find original pel value
+	for(int x = 0; x < fsci.size().width; x++){
+		for(int y = 0; y < fsci.size().height; y++){
+			int cellx = x/(ALPHA); //As the cell image has already been scaled, the only difference is alpha!
+			int celly = y/(ALPHA);
 			if(nscm.at<uchar>(cv::Point(cellx,celly)) == '1'){
 				cv::Point origin_segmented = cv::Point(xmin, ymin)*ALPHA;
 				cv::Point cell_segmented = origin_segmented + cv::Point(cellx*ALPHA, celly*ALPHA);
-				//This gives us the origin of each cell in the original depth image
-				for(int peli = 0; peli < ALPHA*scaling; peli++){
-					for(int pelj = 0; pelj < ALPHA*scaling; pelj++){
-						cv::Point offset_segmented = cv::Point(peli/scaling,pelj/scaling);
-						cv::Point candidate_image_pel = cv::Point(cellx*ALPHA*scaling + peli, celly*ALPHA*scaling + pelj);
-						cv::Point depth_image_pel = cell_segmented+offset_segmented;
-						//std::cout<<"Assigning (" << candidate_image_pel.x << "," << candidate_image_pel.y << ")";
-						//std::cout<<"from (" << depth_image_pel.x << "," << depth_image_pel.y << ") to: " << depthim.at<float>(depth_image_pel) << std::endl;
-						//std::cout<<"Candidate_image size: " << fsci.size().width << " by " <<fsci.size().height<< std::endl;
-						//std::cout<<"mask width: " << width << ", height: " <<height<< ", scaling: "<< scaling << std::endl;
-						fsci.at<float>(candidate_image_pel) = depthim.at<float>(depth_image_pel);
-						//ints.at<uchar>(candidate_image_pel) = 255;//depthim.at<float>(depth_image_pel);
-					}	
-				}
+				cv::Point offset_segmented = cv::Point(x/scaling - cellx*ALPHA, y/scaling - celly*ALPHA);
+				cv::Point depth_image_pel = cell_segmented+offset_segmented;
+				/*/std::cout<<"Assigning (" << x << "," << y << ")";
+				std::cout<<"from (" << depth_image_pel.x << "," << depth_image_pel.y << ") to: " << depthim.at<float>(depth_image_pel) << std::endl;
+				std::cout<<"Candidate_image size: " << fsci.size().width << " by " <<fsci.size().height<< std::endl;
+				std::cout<<"mask width: " << width << ", height: " <<height<< ", scaling: "<< scaling << std::endl;*/
+				fsci.at<float>(cv::Point(x,y)) = depthim.at<float>(depth_image_pel);
 			}
-			else { 
-				for(int peli = 0; peli < ALPHA*scaling; peli++){
-					for(int pelj = 0; pelj < ALPHA*scaling; pelj++){
-						cv::Point candidate_image_pel = cv::Point(cellx*ALPHA*scaling + peli, celly*ALPHA*scaling + pelj);
-						fsci.at<float>(candidate_image_pel) = -1;
-					}	
-				}
+			else {
+				fsci.at<float>(cv::Point(x,y)) = 0.0/0.0; //NaN i.e undefined
+
 			}
+			/*if(celly != lastcelly && celly > 0){
+				cv::imshow("Building up of Candidate image", fsci);
+				cv::waitKey(1);
+				lastcelly = celly;
+			}*/
 		}
 	}
 
-	im = fsci;
-
-	/*//find the scaling that we need to apply to squash/stretch the candidate into the candidate image
-	float scaling = std::min((float)CANDIDATE_WIDTH/ocw, (float)CANDIDATE_HEIGHT/och);
-	//this gives us a new sub-candidate image within which we rebuild out scaled candidate
-	cv::Mat nsi = cv::Mat(cv::Size(scaling*ocw, scaling*och), CV_32FC1);
-	std::cout << "Scaling: " << scaling << ", new: width = " << nsi.size().width << ", height = " << nsi.size().height << std::endl; 
-	//fill in this new scaled image
-	for(int x = 0; x < nsi.size().width; x++){
-		for(int y = 0; y<nsi.size().height; y++){
-			int originalx = x/scaling;
-			int originaly = y/scaling;
-			nsi.at<float>(cv::Point(x,y)) = osi.at<float>(cv::Point(originalx, originaly));
-		}
-	}*/
-
 	//finally we want to position this sub-candidate image into the candidate image
-	im = cv::Mat::ones(cv::Size(CANDIDATE_WIDTH, CANDIDATE_HEIGHT), CV_32FC1)*-1;
+	im = cv::Mat(cv::Size(CANDIDATE_WIDTH, CANDIDATE_HEIGHT), CV_32FC1, 0.0/0.0);
 	cv::Point image_centre = cv::Point((CANDIDATE_WIDTH)/2, (CANDIDATE_HEIGHT)/2);
 	cv::Point start = image_centre - cv::Point(fsci.size().width/2, fsci.size().height/2);
 

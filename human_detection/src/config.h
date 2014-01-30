@@ -18,8 +18,9 @@
 #define KDEPTH 5
 #define KNORMAL 1
 #define MIN_SIZE 15
-#define CANDIDATE_WIDTH 200
-#define CANDIDATE_HEIGHT 400
+#define CANDIDATE_WIDTH 64
+#define CANDIDATE_HEIGHT 128
+#define DILATING_SCALE 5
 
 //define system parameters
 /*#define SIGMA 0.5
@@ -40,6 +41,11 @@
 #define DELTAXZ 0.5
 #define DELTAY 1.0
 
+//classification params
+#define HOD_CELL_SIZE 16
+#define HOD_ORIENT_BINS 18
+#define HOD_BLOCK_SIZE 2
+#define HOD_BLOCK_SHIFT 1
 
 //candidate class params
 #define F_H 58//*3.141592653589793/180)
