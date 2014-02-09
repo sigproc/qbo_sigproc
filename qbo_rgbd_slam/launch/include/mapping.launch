@@ -37,7 +37,7 @@
     <param name="max_stdev" value="0.05"/>
     <param name="max_map_z" value="2.0" />
     <remap from="rgbd/rgb" to="/camera/rgb/image_rect_color" />
-    <remap from="rgbd/depth" to="/camera/depth_registered/hw_registered/image_rect_raw " />
+    <remap from="rgbd/depth" to="/camera/depth_registered/hw_registered/image_rect_raw" />
     <remap from="rgbd/info" to="/camera/depth/camera_info" />
   </node>
 
