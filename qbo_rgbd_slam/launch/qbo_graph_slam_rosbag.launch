@@ -1,5 +1,5 @@
 <launch>
-  <arg name="bag" default="/media/Edog/Rosbag/throttletest.bag"/>
+  <arg name="bag" default="/media/Edog/Rosbag/dpo.bag"/>
   <node pkg="rosbag" type="play" name="rosbag" args="$(arg bag) --clock" />
 
  	
@@ -21,11 +21,30 @@
 
   	<node pkg="nodelet" type="nodelet" name="cloudify"
         args="load depth_image_proc/point_cloud_xyzrgb record_player_manager --no-bond">
-    <remap from="depth_registered/image_rect" to="/camera/depth_registered/hw_registered/image_rect_raw_throttle"/>
-    <remap from="depth_registered/points" to="camera/depth_registered/points"/>
-    <remap from="rgb/image_rect_color" to="/camera/rgb/image_rect_color_throttle"/>
-    <remap from="rgb/camera_info" to="/camera/depth/camera_info"/>
+    	<remap from="depth_registered/image_rect" to="/camera/depth_registered/hw_registered/image_rect_raw_throttle"/>
+    	<remap from="depth_registered/points" to="camera/depth_registered/points"/>
+    	<remap from="rgb/image_rect_color" to="/camera/rgb/image_rect_color_throttle"/>
+    	<remap from="rgb/camera_info" to="/camera/depth/camera_info"/>
 	
 	</node>
 
+	<node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
+		<param name="resolution" value="0.1" />
+		
+		<!-- fixed map frame (set to 'map' if SLAM or localization running!) -->
+		<param name="frame_id" type="string" value="odom" />
+		
+		<!-- maximum range to integrate (speedup!) -->
+		<param name="filter_ground" value="false" />
+		<param name="occupancy_max_z" value="0.6" />
+		<param name="occupancy_min_z" value="0.05" />
+		<param name="ground_filter/plane_distance=" value="0.0" />
+		<param name="sensor_model/min" value="0.12" />
+		<param name="sensor_model/max" value="0.97" />
+		<param name="sensor_model/hit" value="0.7" />
+		<param name="sensor_model/miss" value="0.4" />
+		<param name="sensor_model/max_range" value="7" />
+		
+	
+	</node>
 </launch>
