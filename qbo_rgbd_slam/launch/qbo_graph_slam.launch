@@ -17,12 +17,6 @@
     <!-- Start the mapping nodes -->
     <include file="$(find qbo_rgbd_slam)/launch/include/mapping_real_time.launch"/>
 
-    <!-- Start the joypay controller -->
-    <group>
-      <node name="joypad" pkg="joy" type="joy_node"/>
-      <node name="joypad_controller" pkg="qbo_joypad" type="joypad_controller.py" />
-    </group>
-
     <!-- Start Q.bo drivers -->
     <node name="qbo_arduqbo" pkg="qbo_arduqbo" type="qbo_arduqbo" output="screen" respawn="true">
       <rosparam file="$(find qbo_rgbd_slam)/launch/include/qbo_driver_settings_graphSLAM.yaml" command="load" />
