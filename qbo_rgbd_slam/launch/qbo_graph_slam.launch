@@ -1,5 +1,5 @@
 <launch>
-  <arg name="qbo_address" default="binky" />
+  <arg name="qbo_address" default="sigproc-robot1" />
   <arg name="qbo_user" default="qbo" />
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find qbo_rgbd_slam)/launch/graph_slam.rviz" />
@@ -15,7 +15,7 @@
 
 
     <!-- Start the mapping nodes -->
-    <include file="$(find qbo_rgbd_slam)/launch/include/mapping.launch"/>
+    <include file="$(find qbo_rgbd_slam)/launch/include/mapping_real_time.launch"/>
 
     <!-- Start the joypay controller -->
     <group>
@@ -32,7 +32,6 @@
     <node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />
 
     <!-- Add corrected pose tf publisher -->
-    <node name="qbo_corrected_pose_publisher" pkg="qbo_rgbd_slam" type="qbo_corrected_pose_publisher"/>
 
     <!-- Transform between base_footprint and the head --> 
     <node name="link" pkg="tf" type="static_transform_publisher" args="0.06 0 0.02 0 0 0 base_footprint base_link 100" />
@@ -56,12 +55,12 @@
       <param name="sensor_model/max_range" value="7" />
     </node>
 
-    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <!--<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
       <rosparam file="$(find qbo_rgbd_slam)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
       <rosparam file="$(find qbo_rgbd_slam)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
       <rosparam file="$(find qbo_rgbd_slam)/config/local_costmap_params.yaml" command="load" />
       <rosparam file="$(find qbo_rgbd_slam)/config/global_costmap_params.yaml" command="load" />
       <rosparam file="$(find qbo_rgbd_slam)/config/base_local_planner_params.yaml" command="load" />
-    </node>
+    </node>-->
   </group>
 </launch>
