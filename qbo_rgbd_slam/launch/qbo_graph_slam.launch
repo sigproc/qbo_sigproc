@@ -23,7 +23,8 @@
     </node>
     
     <!-- Add in head joint odometry -->
-    <node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />
+    <!--<node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />-->
+    <node name="rigid_joints" pkg="tf" type="static_transform_publisher" args="0 0 0.3 0 0.112 -0.005 base_link head 100" />
 
     <!-- Add corrected pose tf publisher -->
     <node name="correction_pub" pkg="qbo_rgbd_slam" type="qbo_map_odom_publisher" />
