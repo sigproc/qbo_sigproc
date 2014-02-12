@@ -1,6 +1,7 @@
 <launch>
   <arg name="bag" default="/media/Edog/Rosbag/dpo.bag"/>
   <node pkg="rosbag" type="play" name="rosbag" args="$(arg bag) --clock" />
+  <param name="use_sim_time" type="bool" value="True"/>
 
  	
 
@@ -14,7 +15,7 @@
 
 
 
-  <node name="correction_pub" pkg="qbo_rgbd_slam" type="qbo_corrected_pose_publisher" />
+  <node name="correction_pub" pkg="qbo_rgbd_slam" type="qbo_map_odom_publisher" />
 
   	<node pkg="nodelet" type="nodelet" args="manager"
         name="record_player_manager" output="screen"/>
@@ -32,7 +33,7 @@
 		<param name="resolution" value="0.1" />
 		
 		<!-- fixed map frame (set to 'map' if SLAM or localization running!) -->
-		<param name="frame_id" type="string" value="odom" />
+		<param name="frame_id" type="string" value="/map" />
 		
 		<!-- maximum range to integrate (speedup!) -->
 		<param name="filter_ground" value="false" />
@@ -44,7 +45,15 @@
 		<param name="sensor_model/hit" value="0.7" />
 		<param name="sensor_model/miss" value="0.4" />
 		<param name="sensor_model/max_range" value="7" />
-		
-	
 	</node>
+
+	<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+      <remap from="/map" to="/projected_map" />
+      <param name="planner_frequency" value="1.0" />
+      <rosparam file="$(find qbo_rgbd_slam)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+      <rosparam file="$(find qbo_rgbd_slam)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+      <rosparam file="$(find qbo_rgbd_slam)/config/local_costmap_params.yaml" command="load" />
+      <rosparam file="$(find qbo_rgbd_slam)/config/global_costmap_params.yaml" command="load" />
+      <rosparam file="$(find qbo_rgbd_slam)/config/base_local_planner_params.yaml" command="load" />
+    </node>
 </launch>

@@ -133,3 +133,6 @@ target_link_libraries(qbo_corrected_pose_publisher ${catkin_LIBRARIES})
 
 add_executable(qbo_odom_publisher src/qbo_odom_publisher.cpp)
 target_link_libraries(qbo_odom_publisher ${catkin_LIBRARIES})
+
+add_executable(qbo_map_odom_publisher src/qbo_map_odom_publisher.cpp)
+target_link_libraries(qbo_map_odom_publisher ${catkin_LIBRARIES})

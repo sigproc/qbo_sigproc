@@ -27,6 +27,8 @@
     output="screen">
     
     <param name="verbose" value="true"/>
+    <param name="motion_constraint" value="true"/>
+    <param name="fixed_frame" value="/map"/>
     <param name="online_graph_opt" value="true"/>
     <param name="graph/min_temporal_distance_for_RANSAC" value="10"/>
     <param name="graph/n_candidates" value="3"/>
