@@ -4,7 +4,7 @@ TrajectoryPlannerROS:
   max_rotational_vel: 1.0
   min_in_place_rotational_vel: 0.4
   global_frame_id: /map
-  controller_frequency: 5
+  controller_frequency: 10
 
   acc_lim_th: 3.2
   acc_lim_x: 2.5
