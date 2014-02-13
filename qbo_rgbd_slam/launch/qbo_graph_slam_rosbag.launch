@@ -34,7 +34,7 @@
 		
 		<!-- fixed map frame (set to 'map' if SLAM or localization running!) -->
 		<param name="frame_id" type="string" value="/map" />
-		
+		<param name="latch" value="false" />
 		<!-- maximum range to integrate (speedup!) -->
 		<param name="filter_ground" value="false" />
 		<param name="occupancy_max_z" value="0.6" />
