@@ -55,6 +55,7 @@
 
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
       <remap from="/map" to="/projected_map" />
+      <param name="planner_frequency" value="1.0" />
       <rosparam file="$(find qbo_rgbd_slam)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
       <rosparam file="$(find qbo_rgbd_slam)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
       <rosparam file="$(find qbo_rgbd_slam)/config/local_costmap_params.yaml" command="load" />
