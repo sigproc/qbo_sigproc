@@ -1,13 +1,13 @@
 TrajectoryPlannerROS:
   max_vel_x: 0.15
   min_vel_x: 0.05
-  max_rotational_vel: 0.3
+  max_rotational_vel: 0.2
   min_in_place_rotational_vel: 0.1
   global_frame_id: /map
-  controller_frequency: 10
+  controller_frequency: 20
 
   acc_lim_th: 3.2
-  acc_lim_x: 2.5
-  acc_lim_y: 2.5
+  acc_lim_x: 1.5
+  acc_lim_y: 1.5
 
   holonomic_robot: false
