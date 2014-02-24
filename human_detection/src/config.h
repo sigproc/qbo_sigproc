@@ -57,6 +57,9 @@
 #define HEURISTIC_HEIGHT
 #define HEURISTIC_WIDTH
 
+//Training params
+#define DIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/"
+
 
 
 

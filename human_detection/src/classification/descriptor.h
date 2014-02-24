@@ -5,6 +5,8 @@
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 #include <math.h>       /* isnan, sqrt */
+#include <sstream>
+#include <string>
 #include "../segment_depth/segment.h"
 
 #include "../config.h"
@@ -23,8 +25,12 @@ public:
 		descriptor();
 		~descriptor();
 		descriptor(cv::Mat im);
+		std::string HODstring();
 		void compute_descriptor();
 		void check_human();
+		cv::Mat visualise_cells(int s);
+		cv::Mat visualise_gmags(int s);
+		cv::Mat visualise_gdirs(int s);
 
 private:
 
@@ -139,30 +145,36 @@ void descriptor::compute_descriptor(){
 }
 
 void descriptor::compute_cells(){
-	
+	int k = 0;
 	//iterate through cell start points
-	for(int x = 0; x < im.cols; x+= HOD_CELL_SIZE){
-		for(int y = 0; y < im.rows; y+=HOD_CELL_SIZE){
+	for(int y = 0; y < im.rows; y+=HOD_CELL_SIZE){
+		for(int x = 0; x < im.cols; x+= HOD_CELL_SIZE){
 			
 			cv::Mat histogram(18,1,CV_32F, cv::Scalar(0));
 			//std::cout << "initialized histogram: " << histogram << std::endl;
-
 			//*
 			for(int i = 0; i < HOD_CELL_SIZE; i++){
 				for(int j = 0; j < HOD_CELL_SIZE; j++){
 					float dir = grad_dir.at<float>(cv::Point(x+i,y+j));
-					//std::cout << "Orientation at (" << x+i << "," << y+j << ") is: " << dir << std::endl;
-					float bin_exact = dir/HOD_ORIENT_BINS;
+					float bin_exact = dir*HOD_ORIENT_BINS/360;
 					int bin_floor = cvFloor(bin_exact);
 					int bin_ceil = cvCeil(bin_exact);
+					//int bin_floor = k%18;
+					//int bin_ceil = k%18;
 					float weight_floor = bin_ceil - bin_exact;
 					float weight_ceil = 1 - weight_floor;
-					//std::cout << "Add to hist[" << bin_floor << "]: " << weight_floor*grad_mag.at<float>(cv::Point(x+i,y+j)) << std::endl;
-					//std::cout << "Add to hist[" << bin_ceil << "]: " << weight_ceil*grad_mag.at<float>(cv::Point(x+i,y+j)) << std::endl;
-					//std::cout << "bin_floor: " << bin_floor << ", bin_ceil: " << bin_ceil << std::endl;					
-					histogram.at<float>(cv::Point(0,bin_floor)) += weight_floor*grad_mag.at<float>(cv::Point(x+i,y+j));
-					histogram.at<float>(cv::Point(0,bin_ceil)) += weight_ceil*grad_mag.at<float>(cv::Point(x+i,y+j));
-					
+					bin_ceil = bin_ceil%18;
+					float mag = grad_mag.at<float>(cv::Point(x+i,y+j));
+					if(mag > 0){ //only add if mag > 0
+						if(weight_floor*weight_ceil < 0){
+						std::cout << "(" << x+i << "," << y+j << ") dir: " << dir << ", mag: " << mag << std::endl;
+						std::cout << "Add to hist[" << bin_floor << "]: " << weight_floor*mag << std::endl;
+						std::cout << "Add to hist[" << bin_ceil << "]: " << weight_ceil*mag << std::endl;					
+						std::cout << "bin_floor: " << bin_floor << ", bin_ceil: " << bin_ceil << std::endl;		
+						}			
+						histogram.at<float>(cv::Point(0,bin_floor)) += weight_floor*mag;
+						histogram.at<float>(cv::Point(0,bin_ceil)) += weight_ceil*mag;
+					}
 				}
 			}
 			if (!cells.empty()){
@@ -170,11 +182,13 @@ void descriptor::compute_cells(){
 				//std::cout << "cells: " << cells << std::endl;
 				//std::cout << "histogram: " << histogram << std::endl;
 				cv::hconcat(cells, histogram,cells);
+				//std::cout<< "cells, rows: " << cells.rows << ", cols: " << cells.cols <<std::endl;
 			}
 			else {
 				cells = histogram;
 			}
 			//*/
+			k++;
 			
 		}
 	}
@@ -182,6 +196,83 @@ void descriptor::compute_cells(){
 
 void descriptor::check_human(){
 	human = true;
+}
+
+cv::Mat descriptor::visualise_cells(int s){
+	//find maximum value in cells
+	double minval, maxval;
+    cv::minMaxIdx(cells, &minval, &maxval);
+	//normalising factor so that the largest magnitude => a length of 8 pels
+	float nf = 8.0/maxval;
+
+	int cell_cols = im.cols/HOD_CELL_SIZE;
+	int cell_rows = im.rows/HOD_CELL_SIZE;
+
+	cv::Mat histograms(im.rows*s,im.cols*s,CV_8UC3, cv::Scalar(0,0,0));
+	int j=0;
+	//now for each cell, draw the histogram
+	for(int y = 0; y < cell_rows; y++){
+		for( int x = 0; x < cell_cols; x++){
+			int cell_index = (y)*cell_cols+(x);
+			cv::Mat cell_histogram = cells.col(cell_index);
+			cv::Point hist_centre = cv::Point(HOD_CELL_SIZE*(x+0.5)*s, HOD_CELL_SIZE*(y+0.5)*s);
+			for(int i = 0; i < cell_histogram.rows; i++){
+				float angle = ((2*3.14159)*i)/HOD_ORIENT_BINS;
+				float mag = cell_histogram.at<float>(i);
+				//float mag = 32;
+				//if(i == 11) mag = 32;
+				if( mag < 0 ) std::cout << "Cell: " << cell_index << ", bin: " << i << ", mag: " << mag << std::endl;
+				cv::Point arrow_end = hist_centre + cv::Point(nf*s*mag*cos(angle), nf*s*mag*sin(angle));
+				line(histograms,hist_centre, arrow_end, cv::Scalar(0,0,255), 2, CV_AA);
+			}
+			//j++;
+		}
+	}
+	std::cout << std::endl;
+	return histograms;
+}
+
+cv::Mat descriptor::visualise_gdirs(int s){
+	
+	cv::Mat gradients(grad_mag.rows*s,grad_mag.cols*s, CV_8UC3, cv::Scalar(0,0,0));
+
+	double minval, maxval;
+    cv::minMaxIdx(grad_mag, &minval, &maxval);
+	float scale = 10*s/maxval;
+	
+
+	for(int y = 0; y < gradients.rows; y+=2*s){
+		for(int x = 0; x < gradients.cols; x+=2*s){
+			float mag = grad_mag.at<float>(cv::Point(x/s,y/s));
+			if( mag != 0){				
+				float angle = 3.14159*grad_dir.at<float>(cv::Point(x/s,y/s))/180;
+				//std::cout << "(" << x << "," << y << "), Mag: " << mag << ", Angle: " << angle << std::endl;
+				cv::Point arrow_end = cv::Point(x+s,y+s) + cv::Point(mag*scale*cos(angle), mag*scale*sin(angle));
+				line(gradients,cv::Point(x+s,y+s), arrow_end, cv::Scalar(0,0,255), 1, CV_AA);
+			}
+		}
+	}
+	return gradients;
+}
+
+cv::Mat descriptor::visualise_gmags(int s){
+//increase size of grad_mag for visualisation
+	cv::Mat gradients(grad_mag.rows*s,grad_mag.cols*s, CV_32FC1);
+	for(int x = 0; x < gradients.cols; x++){
+		for(int y = 0; y < gradients.rows; y++){		
+			gradients.at<float>(cv::Point(x,y)) = grad_mag.at<float>(cv::Point(x/s,y/s));
+		}
+	}
+	return gradients;
+}
+
+std::string descriptor::HODstring(){
+	std::ostringstream stringStream;
+	for( int j = 0; j < HOD.total(); j++){
+		stringStream << j << ":" << HOD.at<float>(cv::Point(0,j)) << ' ';
+	}
+	stringStream << '#' <<'\n';
+	return stringStream.str();
 }
 
 #endif

@@ -3,6 +3,8 @@
 #include <time.h>
 #include <math.h>       /* isnan, sqrt */
 #include <vector>
+#include <iostream>
+#include <fstream>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -187,14 +189,6 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
         return;
     }
  
-	/* TODO dont need this anymore
-	double minval, maxval;
-    cv::minMaxIdx(in_msg->image, &minval, &maxval);
-    std::cout << "Minval: " << minval << std::endl;
-    std::cout << "Maxval: " << maxval << std::endl;
-    //cv::Mat *output_Im = new cv::Mat();
-	in_msg->image.convertTo(in_msg->image, CV_8UC1,255.0/maxval);*/
-
 	const char* filename = "tmpIm.ppm";
 	float sigma = SIGMA;
 	float Kdepth = KDEPTH;
@@ -263,7 +257,6 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 	postPrep = clock();
 
 	//segment image
-	//outputIm = segment_image1C(inputIm, sigma, Kdepth, Knormal , min_size, &num_ccs, &normalIm, &depthseg, &normalseg);
 	universe *u_segmented = segment_image1C(inputIm, sigma, Kdepth, Knormal , min_size, &num_ccs, &normalIm, &depthseg, &normalseg, &outputIm);
 
 	postSeg = clock();
@@ -324,6 +317,11 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 
 	cv::waitKey(1000);
 
+	//Open File to write descriptors to. Contents of this file are re-written for each frame!
+	std::ofstream file;
+	std::string dir = DIR;
+	dir.append("test.txt");
+	file.open (dir.c_str());
 
 	//show candidates
 	for(std::vector<candidate>::iterator it = candidates.begin(); it != candidates.end(); it++) {
@@ -332,20 +330,31 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 			candidate_descriptor.compute_descriptor();
 			candidate_descriptor.check_human();
 			cv::Mat display;
-			/*cv::Mat display_cells(it->im.size(),CV_8UC1);
-			for(int x = 0; x < display_cells.cols; x++){
-				for(int y = 0; y < display_cells.rows; y++){
-					display_cells.at<uchar>(cv::Point(x,y)) = candidate_descriptor.grad_mag.at<float>(cv::Point(x/16,y/16));
-				}
-			}
-			double maxval2;
-			cv::minMaxIdx(candidate_descriptor.grad_mag, &minval, &maxval2);*/
 			it->im.convertTo(display, CV_8UC1,255.0/maxval);
+			cv::Mat histograms = candidate_descriptor.visualise_cells(4);
+			cv::Mat mags = candidate_descriptor.visualise_gmags(4);
+			cv::Mat dirs = candidate_descriptor.visualise_gdirs(4);
+			//convert gradients to 3 channel char
+			double gmin, gmax;
+			cv::minMaxIdx(mags, &gmin, &gmax);
+			cv::cvtColor(mags,mags, CV_GRAY2BGR);
+			mags.convertTo(mags, CV_8UC3,255.0/gmax);
+			//std::cout << "Histogram size: " << histograms.size() << ", type: " << histograms.type() << std::endl;
+			//std::cout << "Gradients size: " << mags.size() << ", type: " << mags.type() << std::endl;
+			//gradients = gradients+histograms;
+			cv::addWeighted(mags,1,histograms,1,0,histograms,-1);
+			cv::addWeighted(mags,1,dirs,1,0,dirs,-1);
 			cv::imshow("Current Candidate", display);
-			cv::imshow("Candidate Cell Magnitudes", candidate_descriptor.grad_mag);
+			cv::imshow("Candidate Cell Magnitudes", dirs);
+			cv::imshow("Candidate Cell Histograms", histograms);
+
+			//print candidate to file
+			file << candidate_descriptor.HODstring();
 			cv::waitKey(1000);
 		}
 	}
+	//close file
+	file.close();
 
 	//Clean up image containers
 	delete inputIm;
