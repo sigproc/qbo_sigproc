@@ -58,7 +58,9 @@
 #define HEURISTIC_WIDTH
 
 //Training params
-#define DIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/"
+#define DATADIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/"
+#define MODEL "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/model"
+#define SVMDIR "/home/sam/cued-masters/src/SVMLight/"
 
 
 

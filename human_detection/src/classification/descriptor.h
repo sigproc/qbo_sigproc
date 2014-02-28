@@ -268,8 +268,12 @@ cv::Mat descriptor::visualise_gmags(int s){
 
 std::string descriptor::HODstring(){
 	std::ostringstream stringStream;
+	stringStream << '+' << '1' << ' ';
 	for( int j = 0; j < HOD.total(); j++){
-		stringStream << j << ":" << HOD.at<float>(cv::Point(0,j)) << ' ';
+		float f = HOD.at<float>(cv::Point(0,j));
+		if( f != 0.0){
+			stringStream << j << ':' << HOD.at<float>(cv::Point(0,j)) << ' ';
+		}
 	}
 	stringStream << '#' <<'\n';
 	return stringStream.str();

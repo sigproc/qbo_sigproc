@@ -319,11 +319,13 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 
 	//Open File to write descriptors to. Contents of this file are re-written for each frame!
 	std::ofstream file;
-	std::string dir = DIR;
-	dir.append("test.txt");
-	file.open (dir.c_str());
+	std::string datadir = DATADIR;
+	datadir.append("test.txt");
+	file.open (datadir.c_str());
 
-	//show candidates
+	int num_candidates = 0;
+
+	//show/evaluate candidates
 	for(std::vector<candidate>::iterator it = candidates.begin(); it != candidates.end(); it++) {
 		if( !(it->erased) ){
 			descriptor candidate_descriptor = descriptor(it->im);
@@ -348,11 +350,13 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 			cv::imshow("Candidate Cell Magnitudes", dirs);
 			cv::imshow("Candidate Cell Histograms", histograms);
 
-			//print candidate to file
+			//print candidates to file
 			file << candidate_descriptor.HODstring();
 			cv::waitKey(1000);
+			num_candidates++;
 		}
 	}
+
 	//close file
 	file.close();
 
@@ -366,6 +370,38 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 
 	//clean up other containers
 	delete u_segmented;
+
+	//Now run classifier on file
+	std::string outputfile = DATADIR;
+	std::string model = MODEL;
+	model = DATADIR;
+	model.append("mock/model");
+	datadir = DATADIR;
+	datadir.append("mock/test.dat");
+	//outputfile.append("classification");
+	outputfile.append("mock/predictions");
+	std::string fncall = SVMDIR;
+	fncall.append("svm_classify ");
+	fncall.append(datadir.append(" "));
+	fncall.append(model.append(" "));
+	fncall.append(outputfile);
+	std::cout << fncall.c_str() << std::endl;
+	int returncode = system(fncall.c_str());
+
+	//Now interpret classifier results and do something...
+	std::ifstream c_descriptors;
+	c_descriptors.open(outputfile.c_str());
+	for(int i = 0; i < num_candidates; i++){
+		char classchar[100];
+		c_descriptors.getline(classchar,100);
+		std::cout << "Read Line: " << classchar;
+		float classval = atof(classchar);
+		std::cout << " has value: " << classval << std::endl;
+		
+		if (classval > 0){
+			std::cout << "Candidate: " << i << " is a human!" << std::endl;
+		}
+	}
 
 	//end of timing
 //	int msec = diff * 1000 / CLOCKS_PER_SEC;
