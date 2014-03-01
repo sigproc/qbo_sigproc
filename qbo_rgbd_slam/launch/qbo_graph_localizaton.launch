@@ -46,13 +46,6 @@
 
     </group>
 
-    <!-- Start the mapping nodes -->
-    <include file="$(find qbo_rgbd_slam)/launch/include/mapping.launch">
-      <arg name="localization_only" value="true"/>
-      <arg name="rgb_input_topic" value="/camera/rgb/image_rect_color" />
-      <arg name="depth_input_topic" value="/camera/depth_registered/hw_registered/image_rect_raw" />
-    </include>
-
     <!-- Publishes tf between map and odom frame"-->
     <node name="correction_pub" pkg="qbo_rgbd_slam" type="qbo_map_odom_publisher" />
 
