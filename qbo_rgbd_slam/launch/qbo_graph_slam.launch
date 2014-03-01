@@ -1,4 +1,5 @@
 <launch>
+  <arg name="nav" default="false" />
   <arg name="qbo_address" default="sigproc-robot1" />
   <arg name="qbo_user" default="qbo" />
 
@@ -8,73 +9,75 @@
     <machine name="qbo" address="$(arg qbo_address)" user="$(arg qbo_user)" default="true"
       env-loader="ROS_HOSTNAME=$(arg qbo_address) ~/cued-masters/devel/env.sh" />
 
-    <!-- Start the openni driver -->
-    <include file="$(find openni2_launch)/launch/openni2.launch">
-      <arg name="depth_registration" value="true" />
-    </include>
+      <!-- Start the openni driver -->
+      <include file="$(find openni2_launch)/launch/openni2.launch">
+        <arg name="depth_registration" value="true" />
+      </include>
 
 
-    <!-- Start the mapping nodes -->
-    <include file="$(find qbo_rgbd_slam)/launch/include/mapping_real_time.launch"/>
+      <!-- Start the mapping nodes -->
+      <include file="$(find qbo_rgbd_slam)/launch/include/mapping_real_time.launch"/>
 
-    <!-- Start Q.bo drivers -->
-    <node name="qbo_arduqbo" pkg="qbo_arduqbo" type="qbo_arduqbo" output="screen" respawn="true">
-      <rosparam file="$(find qbo_rgbd_slam)/launch/include/qbo_driver_settings_graphSLAM.yaml" command="load" />
-    </node>
-    
-    <!-- Add in head joint odometry -->
-    <!--<node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />-->
-    <node name="rigid_joints" pkg="tf" type="static_transform_publisher" args="0 0 0.3 0 0.112 0.0 base_link head 100" />
+      <!-- Start Q.bo drivers -->
+      <node name="qbo_arduqbo" pkg="qbo_arduqbo" type="qbo_arduqbo" output="screen" respawn="true">
+        <rosparam file="$(find qbo_rgbd_slam)/launch/include/qbo_driver_settings_graphSLAM.yaml" command="load" />
+      </node>
 
-    <!-- Add a voxel filter for the point cloud-->
-    <node name="voxel_filter" pkg="qbo_pcl" type="qbo_pcl_decimator">
-      <param name="leaf_size" value="0.1" />
-      <param name="input_topic" value="/camera/depth_registered/points" />
-      <param name="output_topic" value="/camera/depth_registered/points_filtered" />
-    </node>
+      <!-- Add in head joint odometry -->
+      <!--<node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />-->
+      <node name="rigid_joints" pkg="tf" type="static_transform_publisher" args="0 0 0.3 0 0.25 0.0 base_link head 100" />
 
-    <group>
-      <node name="joypad" pkg="joy" type="joy_node"/>
-      <node name="joypad_controller" pkg="qbo_joypad" type="joypad_controller.py" />
+      <!-- Add a voxel filter for the point cloud-->
+      <node name="voxel_filter" pkg="qbo_pcl" type="qbo_pcl_decimator">
+        <param name="leaf_size" value="0.1" />
+        <param name="input_topic" value="/camera/depth_registered/points" />
+        <param name="output_topic" value="/camera/depth_registered/points_filtered" />
+      </node>
+
+      <group>
+        <node name="joypad" pkg="joy" type="joy_node"/>
+        <node name="joypad_controller" pkg="qbo_joypad" type="joypad_controller.py" />
+      </group>
+
+
+      <!-- Add corrected pose tf publisher -->
+      <node name="correction_pub" pkg="qbo_rgbd_slam" type="qbo_map_odom_publisher">
+        <param name="rate" value="11" />
+      </node>
+
+      <!-- Transform between base_footprint and the head --> 
+      <node name="link" pkg="tf" type="static_transform_publisher" args="0.06 0 0.02 0 0 0 base_footprint base_link 100" />
+
+      <!-- Our camera is slightly on the skew, hence the slight roll -->
+      <node name="depth_camera" pkg="tf" type="static_transform_publisher" args="0.02 0 0.13 0 0 0.04 head camera_link 100" />
+
+      <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
+        <param name="resolution" value="0.1" />
+        <!-- fixed map frame (set to 'map' if SLAM or localization running!) -->
+        <param name="frame_id" type="string" value="/map" />
+        <param name="latch" value="false" />
+        <param name="filter_ground" value="false" />
+        <!-- maximum range to integrate (speedup!) -->
+        <param name="occupancy_max_z" value="0.6" />
+        <param name="occupancy_min_z" value="0.05" />
+        <param name="ground_filter/plane_distance=" value="0.0" />
+        <param name="sensor_model/min" value="0.12" />
+        <param name="sensor_model/max" value="0.97" />
+        <param name="sensor_model/hit" value="0.7" />
+        <param name="sensor_model/miss" value="0.4" />
+        <param name="sensor_model/max_range" value="7" />
+      </node>
+
+      <!-- Path planner -->
+      <group if="$(arg nav)">
+        <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+          <param name="planner_frequency" value="1.0" />
+          <rosparam file="$(find qbo_rgbd_slam)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+          <rosparam file="$(find qbo_rgbd_slam)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+          <rosparam file="$(find qbo_rgbd_slam)/config/local_costmap_params.yaml" command="load" />
+          <rosparam file="$(find qbo_rgbd_slam)/config/global_costmap_params.yaml" command="load" />
+          <rosparam file="$(find qbo_rgbd_slam)/config/base_local_planner_params.yaml" command="load" />
+        </node>
+      </group>
     </group>
-
-
-    <!-- Add corrected pose tf publisher -->
-    <node name="correction_pub" pkg="qbo_rgbd_slam" type="qbo_map_odom_publisher">
-      <param name="rate" value="11" />
-    </node>
-
-    <!-- Transform between base_footprint and the head --> 
-    <node name="link" pkg="tf" type="static_transform_publisher" args="0.06 0 0.02 0 0 0 base_footprint base_link 100" />
-
-    <!-- Our camera is slightly on the skew, hence the slight roll -->
-    <node name="depth_camera" pkg="tf" type="static_transform_publisher" args="0.02 0 0.13 0 0 0.04 head camera_link 100" />
-
-    <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
-      <param name="resolution" value="0.1" />
-      <!-- fixed map frame (set to 'map' if SLAM or localization running!) -->
-      <param name="frame_id" type="string" value="/map" />
-      <param name="latch" value="false" />
-      <param name="filter_ground" value="false" />
-      <!-- maximum range to integrate (speedup!) -->
-      <param name="occupancy_max_z" value="0.6" />
-      <param name="occupancy_min_z" value="0.05" />
-      <param name="ground_filter/plane_distance=" value="0.0" />
-      <param name="sensor_model/min" value="0.12" />
-      <param name="sensor_model/max" value="0.97" />
-      <param name="sensor_model/hit" value="0.7" />
-      <param name="sensor_model/miss" value="0.4" />
-      <param name="sensor_model/max_range" value="7" />
-    </node>
-
-    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-      <remap from="/map" to="/projected_map" />
-      <param name="planner_frequency" value="1.0" />
-      <rosparam file="$(find qbo_rgbd_slam)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
-      <rosparam file="$(find qbo_rgbd_slam)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
-      <rosparam file="$(find qbo_rgbd_slam)/config/local_costmap_params.yaml" command="load" />
-      <rosparam file="$(find qbo_rgbd_slam)/config/global_costmap_params.yaml" command="load" />
-      <rosparam file="$(find qbo_rgbd_slam)/config/base_local_planner_params.yaml" command="load" />
-    </node>
-  </group>
-</launch>
+  </launch>
