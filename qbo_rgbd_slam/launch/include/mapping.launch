@@ -22,6 +22,8 @@
     <!--Whether or not to run localization only-->
     <arg name="localization_only" default="false"/>
     <arg name="map_directory" default="$(env ROS_TEST_RESULTS_DIR)/map" />
+    <arg name="rgb_input_topic" default="/camera/rgb/image_rect_color" />
+    <arg name="depth_input_topic" default="/camera/depth_registered/hw_registered/image_rect_raw" />
 
 
   #### KEYFRAME MAPPING ###################################
@@ -44,8 +46,8 @@
     <param name="max_stdev" value="0.05"/>
     <param name="max_map_z" value="2.0" />
     <param name="max_ang_vel" value="0.2" />
-    <remap from="rgbd/rgb" to="/camera/rgb/image_rect_color_throttle" />
-    <remap from="rgbd/depth" to="/camera/depth_registered/hw_registered/image_rect_raw_throttle" />
+    <remap from="rgbd/rgb" to="$(arg rgb_input_topic)" />
+    <remap from="rgbd/depth" to="$(arg depth_input_topic)" />
     <remap from="rgbd/info" to="/camera/depth/camera_info" />
   </node>
 
