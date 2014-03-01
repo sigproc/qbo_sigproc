@@ -20,13 +20,6 @@
         <remap from="rgb/camera_info" to="/camera/depth/camera_info"/>
       </node>
 
-    <!-- Start the mapping nodes -->
-    <include file="$(find qbo_rgbd_slam)/launch/include/mapping.launch">
-      <arg name="localization_only" value="true"/>
-      <arg name="rgb_input_topic" value="/camera/rgb/image_rect_color_throttle" />
-      <arg name="depth_input_topic" value="/camera/depth_registered/hw_registered/image_rect_raw_throttle" />
-    </include>
-
     </group>
     <group unless="$(arg rosbag_play)">
      <!-- Start Q.bo drivers -->
@@ -51,12 +44,6 @@
       <!-- Our camera is slightly on the skew, hence the slight roll -->
       <node name="depth_camera" pkg="tf" type="static_transform_publisher" args="0.02 0 0.13 0 0 0.04 head camera_link 100" />
 
-      <!-- Start the mapping nodes -->
-    <include file="$(find qbo_rgbd_slam)/launch/include/mapping.launch">
-      <arg name="localization_only" value="true"/>
-      <arg name="rgb_input_topic" value="/camera/rgb/image_rect_color" />
-      <arg name="depth_input_topic" value="/camera/depth_registered/hw_registered/image_rect_raw" />
-    </include>
     </group>
 
     <!-- Start the mapping nodes -->
@@ -75,6 +62,15 @@
       <param name="input_topic" value="/camera/depth_registered/points" />
       <param name="output_topic" value="/camera/depth_registered/points_filtered" />
     </node>
+
+    <!-- Start the mapping nodes -->
+    <include file="$(find qbo_rgbd_slam)/launch/include/mapping.launch">
+      <arg name="localization_only" value="true"/>
+      <group if="$(arg rosbag_play)">
+        <arg name="rgb_input_topic" value="/camera/rgb/image_rect_color_throttle" />
+        <arg name="depth_input_topic" value="/camera/depth_registered/hw_registered/image_rect_raw_throttle" />
+      </group>
+    </include>
 
     <group if="$(arg nav)">
       <!--Map Server-->
