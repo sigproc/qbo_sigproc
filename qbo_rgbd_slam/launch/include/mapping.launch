@@ -24,6 +24,7 @@
     <arg name="map_directory" default="$(env ROS_TEST_RESULTS_DIR)/map" />
     <arg name="rgb_input_topic" default="/camera/rgb/image_rect_color" />
     <arg name="depth_input_topic" default="/camera/depth_registered/hw_registered/image_rect_raw" />
+    <arg name="pcd_map_resolution" default="0.05" />
 
 
   #### KEYFRAME MAPPING ###################################
@@ -41,7 +42,7 @@
     <param name="graph/n_candidates" value="3"/>
     <param name="kf_dist_eps"  value="0.25"/> <!-- 25 cm (used to be 25) -->
     <param name="kf_angle_eps" value="0.35"/> <!-- 20 deg (used to be  20-->
-    <param name="pcd_map_res" value="0.1"/> <!-- used to be 0.01 -->
+    <param name="pcd_map_res" value="$(arg pcd_map_resolution)"/> <!-- used to be 0.01 -->
     <param name="max_range" value="7"/> <!-- used to be 7 -->
     <param name="max_stdev" value="0.05"/>
     <param name="max_map_z" value="2.0" />

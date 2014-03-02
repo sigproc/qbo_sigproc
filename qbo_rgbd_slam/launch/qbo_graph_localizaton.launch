@@ -3,6 +3,8 @@
   <arg name="rosbag_play" default="false" />
   <arg name="bag" default="/media/Edog/Rosbag/dpo.bag"/>
   <arg name="saved_map" default="$(env ROS_TEST_RESULTS_DIR)/map.yaml"/>
+  <arg name="pcd_resolution" default="0.05" />
+  <arg name="local_costmap_pcd_resolution" default="0.05" />
 
   <group if="$(arg rosbag_play)">
     <!-- Plays the rosbag file -->
@@ -51,7 +53,7 @@
 
     <!-- Add a voxel filter for the point cloud-->
     <node name="voxel_filter" pkg="qbo_pcl" type="qbo_pcl_decimator">
-      <param name="leaf_size" value="0.1" />
+      <param name="leaf_size" value="$(arg local_costmap_pcd_resolution)" />
       <param name="input_topic" value="/camera/depth_registered/points" />
       <param name="output_topic" value="/camera/depth_registered/points_filtered" />
     </node>
@@ -59,6 +61,7 @@
     <!-- Start the mapping nodes -->
     <include file="$(find qbo_rgbd_slam)/launch/include/mapping.launch">
       <arg name="localization_only" value="true"/>
+      <arg name="pcd_map_resolution" value="$(arg pcd_resolution)"/>
       <group if="$(arg rosbag_play)">
         <arg name="rgb_input_topic" value="/camera/rgb/image_rect_color_throttle" />
         <arg name="depth_input_topic" value="/camera/depth_registered/hw_registered/image_rect_raw_throttle" />
