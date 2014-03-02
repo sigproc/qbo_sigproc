@@ -50,6 +50,7 @@
 //candidate class params
 #define F_H 58//*3.141592653589793/180)
 #define F_V 45//*3.141592653589793/180)
+#define F_HPELS 580
 #define PEL_WIDTH 640
 #define PEL_HEIGHT 480
 #define RANSACK 20
@@ -61,6 +62,8 @@
 #define DATADIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/"
 #define MODEL "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/model"
 #define SVMDIR "/home/sam/cued-masters/src/SVMLight/"
+#define FRAMESDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/bag_frames/"
+#define ANNOTDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/annotations/"
 
 
 

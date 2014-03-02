@@ -109,3 +109,12 @@ include_directories(
 
 add_executable(human_detection_2 src/human_detection_2.cpp src/segment_depth/segment.cpp src/segment_depth/segment-image.h src/segment_depth/segment-graph.h src/segment_depth/disjoint-set.h src/segment_depth/pnmfile.h src/merge_and_filter/merge_and_filter.h src/merge_and_filter/candidate.h src/classification/descriptor.h)
 target_link_libraries(human_detection_2 ${catkin_LIBRARIES})
+
+add_executable(driver_test src/driver_test.cpp src/segment_depth/segment.cpp src/segment_depth/segment-image.h src/segment_depth/segment-graph.h src/segment_depth/disjoint-set.h src/segment_depth/pnmfile.h src/merge_and_filter/merge_and_filter.h src/merge_and_filter/candidate.h src/classification/descriptor.h)
+target_link_libraries(driver_test ${catkin_LIBRARIES})
+
+add_executable(save_metric_frames src/save_metric_frames.cpp src/segment_depth/segment.cpp src/segment_depth/segment-image.h src/segment_depth/segment-graph.h src/segment_depth/disjoint-set.h src/segment_depth/pnmfile.h src/merge_and_filter/merge_and_filter.h src/merge_and_filter/candidate.h src/classification/descriptor.h)
+target_link_libraries(save_metric_frames ${catkin_LIBRARIES})
+
+add_executable(hd_train src/hd_train.cpp src/segment_depth/segment.cpp src/segment_depth/segment-image.h src/segment_depth/segment-graph.h src/segment_depth/disjoint-set.h src/segment_depth/pnmfile.h src/merge_and_filter/merge_and_filter.h src/merge_and_filter/candidate.h src/classification/descriptor.h)
+target_link_libraries(hd_train ${catkin_LIBRARIES})

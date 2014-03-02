@@ -221,14 +221,12 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 	for (int y=0; y < sub_height; y++){
 		for(int x=0; x < sub_width; x++){ //we minus 2 as incoming images are missing their right most column
 			//get s values randomly from each cell into vector
-			//TODO std::vector<uchar> samples;
 			std::vector<float> samples;
 			for (int i = 0 ; i <= s; i++){
 				//random x and y offset vals
 				int dx = rand() % alpha;
 				int dy = rand() % alpha;
 				//grab the associated pel from the input image
-				//TODO dval = in_msg->image.at<uchar>(y*alpha+dy,x*alpha+dx);
 				dval = in_msg->image.at<float>(y*alpha+dy,x*alpha+dx);
 				if(!isnan(dval)){
 					samples.push_back(dval);
