@@ -246,7 +246,7 @@ bool create_new_session(std::string bag, std::string  * session){
 
 	timeinfo = localtime (&rawtime);
 
-	strftime (dirname,20,"%Y_%m_%d_%M",timeinfo);
+	strftime (dirname,20,"%Y_%m_%d-%H_%M",timeinfo);
 
 	std::string path_session = ANNOTDIR;
 	path_session.append(bag + "session/" + dirname + "/");

@@ -49,7 +49,7 @@ class train_frame {
 	train_frame(std::string im_filename_, cv::Mat frame_, std::ofstream * s_boxes_, std::ofstream * s_descriptors_, std::ofstream * s_log_);
 	void tag_frame(bool * exit);
 	void tag_candidates();
-	void save_session();
+	void save_session(std::string bag, std::string session, std::string f_start);
 
 	
 	cv::Point mouse;
@@ -66,7 +66,7 @@ void onMouse_frame( int event, int x, int y, int, void*);
 void onMouse_cand( int event, int x, int y, int, void*);
 void dummy( int event, int x, int y, int, void*);
 
-void classify_candidates(std::vector<candidate> candidates, std::ofstream * descriptors);
+void classify_candidates(std::vector<candidate> candidates, std::ofstream * descriptors, std::ofstream * log);
 std::vector<candidate> get_candidates(cv::Mat frame);
 
 
@@ -116,6 +116,7 @@ void train_frame::tag_frame(bool * exit){
 	cv::setMouseCallback("tag_frame",onMouse_frame, (void*)this);
 	//infinite loop until we exit or finish
 	char oldc = NULL;
+	int count = 0;
 	while( 1 ) {
 
 		if(s == drawing){
@@ -134,10 +135,11 @@ void train_frame::tag_frame(bool * exit){
 
 		if (c == 32){
 			//on a space leave while loop
+			*s_log << im_filename << " boxes:" << count;
 			break;
 		}
 		switch(c){
-			//Do actions without leaving while loop
+			//Do actions without leaving while loop and log records
 			case 'h':
 				vis = (int)-1;
 				while(vis == -1){
@@ -164,6 +166,7 @@ void train_frame::tag_frame(bool * exit){
 				*s_boxes << box_end.x - box_start.x << " " << box_end.x - box_start.x << " ";	
 				*s_boxes << (int)vis << std::endl;
 				//break; This is deliberatly ignored so that after a 'hold' there is a reset
+				count++;
 			case 'r':
 				box_start = cv::Point(0,0);
 				box_end = cv::Point(0,0);
@@ -173,6 +176,7 @@ void train_frame::tag_frame(bool * exit){
 				break;
 			case 27:
 				*exit = true;
+				*s_log << im_filename << " boxes:" << count;
 				return;
 				break;
 			default:
@@ -187,15 +191,94 @@ void train_frame::tag_frame(bool * exit){
 
 }
 
-void train_frame::save_session(){
-	std::cout << "Copying data from session into complet..." << std::endl;
+void train_frame::save_session(std::string bag, std::string session, std::string f_start){
+
+	//read in desc_start and desc_end
+	int desc_start = 0;
+	int desc_end = 0;
+	std::string line;
+
+	std::cout << "Copying data from session to 'complete' files..." << std::endl;
+	//close session files
+	s_boxes->close();
+	s_descriptors->close();
+	s_log->close();
+	
+	//determine strings of 'complete' files
+	std::string path_comp_boxes = ANNOTDIR;
+	path_comp_boxes.append(bag);
+	path_comp_boxes.append(COMPBOXES);
+	
+	std::string path_comp_desc = ANNOTDIR;
+	path_comp_desc.append(bag);
+	path_comp_desc.append(COMPDESC);
+
+	std::string path_comp_log = ANNOTDIR;
+	path_comp_log.append(bag);
+	path_comp_log.append(COMPLOG);
+
+	//count how many lines are in c_desc, into desc_start
+	std::ifstream c_desc_i;
+	c_desc_i.open(path_comp_desc.c_str(), std::ios::app);
+	if(c_desc_i.is_open() ){
+		while ( std::getline(c_desc_i,line) ){
+			desc_start++;
+		}
+		c_desc_i.close();
+	}
+
+	//open these files at the end
+	std::ofstream c_boxes;
+	c_boxes.open(path_comp_boxes.c_str(), std::ios::app);
+	std::ofstream c_log;
+	c_log.open(path_comp_log.c_str(), std::ios::app);
+	std::ofstream c_desc_o;
+	c_desc_o.open(path_comp_desc.c_str(), std::ios::app);
+
+	//Re-open session files as inputs
+	std::string path_session = ANNOTDIR;
+	path_session.append(bag + "session/" + session + "/");
+	std::ifstream s_boxes((path_session + "boxes").c_str());
+	std::ifstream s_desc((path_session + "descriptors").c_str());
+	
+	//Copy contents across
+	if(s_boxes.is_open() ){
+		while ( std::getline (s_boxes,line) ){
+		  c_boxes << line << '\n';
+		}
+		s_boxes.close();
+	}
+	else{
+		std::cout << "ERROR: Could not open session/boxes for copying to complete/boxes" << std::endl;
+	}
+
+
+	if(s_desc.is_open() ){
+		desc_end = desc_start;
+		while ( std::getline (s_desc,line) ){
+			c_desc_o << line << '\n';
+			desc_end++;
+		}
+		s_desc.close();
+	}
+	else {
+		std::cout << "ERROR: Could not open session/descriptors for copying to complete/descriptors" << std::endl;
+	}
+
+	//Update Log
+	c_log << session << " " << desc_start << " " << desc_end << " " << f_start << " " << im_filename << std::endl;
+
 	std::cout << "Exiting" << std::endl;
+	//Close remaining files
+	c_log.close();
+	c_boxes.close();
+	c_desc_o.close();
 }
 
 void train_frame::tag_candidates(){
 
 	std::vector<candidate> candidates = get_candidates(frame);
-	classify_candidates(candidates, s_descriptors);
+	classify_candidates(candidates, s_descriptors, s_log);
 }
 
 
@@ -273,7 +356,7 @@ void dummy(int event, int x, int y, int, void*){
 ***************************************************************************************/
 int main ( int argc, char **argv){
 
-	//THE ARGUMENT WILL BE THAT OF THE DIRECTORY WHICH CONTAINS THE IMAGES
+	//The argument is the name of the bag file.
 	const char* bag_cstr = argv[1];
 	bool tag_frames = true;
 	bool tag_candidates = true;
@@ -324,13 +407,6 @@ int main ( int argc, char **argv){
 		std::cout << "ERROR: " << path << " contains no frames. " <<std::endl;
 		return EXIT_FAILURE;
 	}
-	
-	std::list<std::string>::iterator im_file;
-	//and print out
-	/*for(im_file = frames.begin(); im_file != frames.end(); im_file++){
-		std::cout << " " << *im_file << std::endl;
-	}
-	std::cout << std::endl;*/
 
 	//Generate names of required directories and check that they exist
 	std::string path_anttn_bag = ANNOTDIR;
@@ -355,14 +431,6 @@ int main ( int argc, char **argv){
 	std::string s_tag;
 	create_new_session(bag, &s_tag);
 
-	/*std::string path_anttn_comp_boxes = ANNOTDIR;
-	path_anttn_comp_boxes.append(bag);
-	path_anttn_comp_boxes.append(COMPBOXES);
-	
-	std::string path_anttn_comp_desc = ANNOTDIR;
-	path_anttn_comp_desc.append(bag);
-	path_anttn_comp_desc.append(COMPDESC);*/
-
 	std::string path_session_boxes = ANNOTDIR;
 	path_session_boxes.append(bag + "session/" + s_tag + "/boxes");
 	
@@ -372,7 +440,7 @@ int main ( int argc, char **argv){
 	std::string path_session_log = ANNOTDIR;
 	path_session_log.append(bag + "session/" + s_tag + "/log.txt");
 
-	//Open Frame  and candidate annotation files
+	//Open session files
 	std::ofstream s_boxes;
 	s_boxes.open(path_session_boxes.c_str());
 	std::ofstream s_descriptors;
@@ -380,7 +448,20 @@ int main ( int argc, char **argv){
 	std::ofstream s_log;
 	s_log.open(path_session_log.c_str());
 
-	for(im_file = frames.begin(); im_file != frames.end(); im_file++){
+	std::list<std::string>::iterator im_file;
+	//and print out
+	/*for(im_file = frames.begin(); im_file != frames.end(); im_file++){
+		std::cout << " " << *im_file << std::endl;
+	}
+	std::cout << std::endl;*/
+
+	//get first frame
+	std::list<std::string>::iterator first_it;
+	first_it = frames.begin();
+	std::string first_frame = *first_it;
+
+
+	for(im_file = first_it; im_file != frames.end(); im_file++){
 		//Get each mat and display
 		std::string f_dir = path + *im_file;
 		//std::cout << f_dir << std::endl;
@@ -400,7 +481,7 @@ int main ( int argc, char **argv){
 			if(tag_frames){
 				f.tag_frame(&exit);
 				if(exit){
-					f.save_session();
+					f.save_session(bag,s_tag, first_frame);
 					return 0;
 				}
 			}
@@ -502,7 +583,7 @@ std::vector<candidate> get_candidates(cv::Mat frame){
 
 }
 
-void classify_candidates(std::vector<candidate> candidates, std::ofstream * descriptors){
+void classify_candidates(std::vector<candidate> candidates, std::ofstream * descriptors, std::ofstream * log){
 
 	int num_candidates = 0;
 	int classification = 0;
@@ -548,6 +629,7 @@ void classify_candidates(std::vector<candidate> candidates, std::ofstream * desc
 	}
 	cv::setMouseCallback("tag_Candidate",dummy);
 	cv::destroyWindow("tag_candidate");
+	*log << " candidates:" << num_candidates << std::endl;
 	std::cout << std::endl << "END OF FRAME " << std::endl << std::endl;	
 }
 
