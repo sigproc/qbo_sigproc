@@ -64,7 +64,12 @@
 #define SVMDIR "/home/sam/cued-masters/src/SVMLight/"
 #define FRAMESDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/bag_frames/"
 #define ANNOTDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/annotations/"
-
+#define COMPLOG "complete/log"
+#define COMPBOXES "complete/boxes"
+#define COMPDESC "complete/descriptors"
+#define SESHLOG "complete/log"
+#define SESHBOXES "complete/boxes"
+#define SESHDESC "session/descriptors"
 
 
 

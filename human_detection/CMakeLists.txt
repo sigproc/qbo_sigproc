@@ -116,5 +116,5 @@ target_link_libraries(driver_test ${catkin_LIBRARIES})
 add_executable(save_metric_frames src/save_metric_frames.cpp src/segment_depth/segment.cpp src/segment_depth/segment-image.h src/segment_depth/segment-graph.h src/segment_depth/disjoint-set.h src/segment_depth/pnmfile.h src/merge_and_filter/merge_and_filter.h src/merge_and_filter/candidate.h src/classification/descriptor.h)
 target_link_libraries(save_metric_frames ${catkin_LIBRARIES})
 
-add_executable(hd_train src/hd_train.cpp src/segment_depth/segment.cpp src/segment_depth/segment-image.h src/segment_depth/segment-graph.h src/segment_depth/disjoint-set.h src/segment_depth/pnmfile.h src/merge_and_filter/merge_and_filter.h src/merge_and_filter/candidate.h src/classification/descriptor.h)
+add_executable(hd_train src/hd_train.cpp src/segment_depth/segment.cpp src/utilities.h src/segment_depth/segment-image.h src/segment_depth/segment-graph.h src/segment_depth/disjoint-set.h src/segment_depth/pnmfile.h src/merge_and_filter/merge_and_filter.h src/merge_and_filter/candidate.h src/classification/descriptor.h)
 target_link_libraries(hd_train ${catkin_LIBRARIES})

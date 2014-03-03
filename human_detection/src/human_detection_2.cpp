@@ -292,9 +292,9 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 	}
 	//display images before showing candidates
 	double minval, maxval;
+	cv::minMaxIdx(in_msg->image, &minval, &maxval);
 	if(SHOWDEPTHIM){
 		//rescale for viewing
-	    cv::minMaxIdx(in_msg->image, &minval, &maxval);
 		in_msg->image.convertTo(in_msg->image, CV_8UC1,255.0/maxval);
 #if SHOWBOXES
 		for(std::list<cv::Rect>::iterator it = boundingBoxes.begin(); it != boundingBoxes.end(); it++){

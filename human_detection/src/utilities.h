@@ -1,3 +1,9 @@
+#include <dirent.h>
+#include <string>
+#include <time.h>
+#include <sys/stat.h>
+
+
 /**********************COMMENTS***************************
 
 READ AND WRITE CODE TAKEN FROM:
@@ -6,6 +12,11 @@ http://beansandbits.blogspot.co.uk/2012/07/readwrite-floating-point-images-with.
 ************************************************************/
 
 
+/************************************************************
+
+				SAVE FLOAT FILES
+
+************************************************************/
 int writeMatToFile(const cv::Mat &I, std::string path) {
  
     //load the matrix size
@@ -150,4 +161,121 @@ int readFileToMat(cv::Mat &I, std::string path) {
     file.close();
  
     return 0;
+}
+
+/************************************************************
+
+				DIRECTORY MANAGEMENT
+
+************************************************************/
+
+int check_make_dir(std::string path){
+
+	/*sit = situation = -1 for fail
+					  =  0 for existed
+					  =  1 for created
+	*/
+	int sit = -1;
+	DIR *dir;
+	struct dirent *ent;
+	if ((dir = opendir (path.c_str())) != NULL) {
+	  closedir (dir);
+	  sit = 0;
+	} 
+	else {
+		// could not open directory 
+		//try to create one
+		if(!mkdir(path.c_str(), 0777) ){
+			sit = 1;
+		}
+	}
+	return sit;
+}
+
+bool create_new_bag_tree(std::string bag){
+		bool success = true;
+
+
+		//create complete subtree and add blank files
+		std::string path_complete = ANNOTDIR;
+		path_complete.append(bag);
+		path_complete.append("complete/");		
+		if(mkdir(path_complete.c_str(), 0777)){
+			std::cout << "create_new_bag_tree failed with bag " << bag << std::endl;
+			success = false;
+		}
+
+		//opening these will create blank files
+		FILE * pFile;
+		pFile = fopen ( (path_complete+"log.txt").c_str(), "w" );
+		if (pFile!=NULL){
+			fclose (pFile);
+		}
+
+		pFile = fopen ( (path_complete+"boxes").c_str(), "w" );
+		if (pFile!=NULL){
+			fclose (pFile);
+		}
+
+		pFile = fopen ( (path_complete+"descriptors").c_str(), "w" );
+		if (pFile!=NULL){
+			fclose (pFile);
+		}
+		
+
+		std::string path_session = ANNOTDIR;
+		path_session.append(bag);
+		path_session.append("session");		
+		if(mkdir(path_session.c_str(), 0777)){
+			std::cout << "create_new_bag_tree failed with bag: " << bag << std::endl;
+			success = false;
+		}
+
+		return success;
+}
+
+bool create_new_session(std::string bag, std::string  * session){
+
+	bool success = true;
+
+	//get create a dir with the date
+	time_t rawtime;
+	struct tm * timeinfo;
+	char dirname [20];
+	time (&rawtime);
+
+	timeinfo = localtime (&rawtime);
+
+	strftime (dirname,20,"%Y_%m_%d_%M",timeinfo);
+
+	std::string path_session = ANNOTDIR;
+	path_session.append(bag + "session/" + dirname + "/");
+
+	if(mkdir(path_session.c_str(), 0777)){
+		std::cout << "create_new_session failed with bag " << bag << std::endl;
+		success = false;
+	}
+
+	//opening these will create blank files
+	FILE * pFile;
+	pFile = fopen ( (path_session+"log.txt").c_str(), "w" );
+	if (pFile!=NULL){
+		fclose (pFile);
+	}
+
+	pFile = fopen ( (path_session+"boxes").c_str(), "w" );
+	if (pFile!=NULL){
+		fclose (pFile);
+	}
+
+	pFile = fopen ( (path_session+"descriptors").c_str(), "w" );
+	if (pFile!=NULL){
+		fclose (pFile);
+	}
+
+	std::string s = dirname;
+	*session = s;
+
+	return success;
+
 }

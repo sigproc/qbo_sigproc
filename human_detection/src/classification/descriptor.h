@@ -20,14 +20,14 @@ public:
 		cv::Mat HOD;
 		cv::Mat grad_dir;
 		cv::Mat grad_mag;
-		bool human;
+		int classification;
 
 		descriptor();
 		~descriptor();
 		descriptor(cv::Mat im);
 		std::string HODstring();
 		void compute_descriptor();
-		void check_human();
+		bool check_human();
 		cv::Mat visualise_cells(int s);
 		cv::Mat visualise_gmags(int s);
 		cv::Mat visualise_gdirs(int s);
@@ -51,7 +51,7 @@ descriptor::descriptor(cv::Mat im_){
 	im = im_;
 	grad_dir = cv::Mat::zeros(im.size(), CV_32F);
 	grad_mag = cv::Mat::zeros(im.size(), CV_32F);
-	human = false;
+	classification = -1;
 }
 
 void descriptor::calc_gradients(){
@@ -194,8 +194,9 @@ void descriptor::compute_cells(){
 	}
 }
 
-void descriptor::check_human(){
-	human = true;
+bool descriptor::check_human(){
+	if(classification == 1) return true;
+	else return false;
 }
 
 cv::Mat descriptor::visualise_cells(int s){
@@ -268,7 +269,12 @@ cv::Mat descriptor::visualise_gmags(int s){
 
 std::string descriptor::HODstring(){
 	std::ostringstream stringStream;
-	stringStream << '+' << '1' << ' ';
+	char sign = '-';
+	if(classification == 1){
+		sign = '+';
+	}
+	
+	stringStream << sign << '1' << ' ';
 	for( int j = 0; j < HOD.total(); j++){
 		float f = HOD.at<float>(cv::Point(0,j));
 		if( f != 0.0){
