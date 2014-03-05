@@ -1,6 +1,8 @@
 <launch>
 
-	 <arg name="bag_path" default="/home/sam/cued-masters/bagfiles/raws.bag" />
+	 <arg name="bag_dir" default="/home/sam/cued-masters/bagfiles/" />
+	 <arg name="bag_file" default="raws.bag" />
+ 	 <arg name="bag_path" default= "$(arg bag_dir)$(arg bag_file)" />
 
       <include file="$(find openni_launch)/launch/openni.launch">
         <arg name="load_driver" value="false"/>

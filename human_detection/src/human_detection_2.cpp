@@ -372,18 +372,14 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 	//Now run classifier on file
 	std::string outputfile = DATADIR;
 	std::string model = MODEL;
-	model = DATADIR;
-	model.append("mock/model");
-	datadir = DATADIR;
-	datadir.append("mock/test.dat");
-	//outputfile.append("classification");
 	outputfile.append("mock/predictions");
 	std::string fncall = SVMDIR;
 	fncall.append("svm_classify ");
 	fncall.append(datadir.append(" "));
 	fncall.append(model.append(" "));
 	fncall.append(outputfile);
-	std::cout << fncall.c_str() << std::endl;
+	//std::cout << fncall.c_str() << std::endl;
+	std::cout << "Running classifier..." << std::endl;
 	int returncode = system(fncall.c_str());
 
 	//Now interpret classifier results and do something...

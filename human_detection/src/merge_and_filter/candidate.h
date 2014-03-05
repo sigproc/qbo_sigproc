@@ -149,8 +149,8 @@ void candidate::create_candidate_image(cv::Mat &depthim){
 	int height = ymax-ymin +1;
 
 	cv::Mat oscm = cv::Mat::zeros(cv::Size(width,height),CV_8UC1); //original scale candidate mask
-	std::cout << "Size of oscm: width = " << oscm.size().width << ", height = " << oscm.size().height << std::endl; 
-	std::cout << "xmin = " << xmin <<", xmax = " << xmax << ", ymin = " << ymin <<", ymax = " << ymax << std::endl;
+	//std::cout << "Size of oscm: width = " << oscm.size().width << ", height = " << oscm.size().height << std::endl; 
+	//std::cout << "xmin = " << xmin <<", xmax = " << xmax << ", ymin = " << ymin <<", ymax = " << ymax << std::endl;
 
 	//given that we only have a list of points, we first need to build the image representing these points
 	for (std::vector<cv::Point3f>::iterator it = pts.begin(); it != pts.end(); it++){
@@ -163,7 +163,7 @@ void candidate::create_candidate_image(cv::Mat &depthim){
 	float scaling = std::min((float)CANDIDATE_WIDTH/(width*ALPHA), (float)CANDIDATE_HEIGHT/(height*ALPHA));
 	//this gives us a new sub-candidate image within which we rebuild out scaled candidate
 	cv::Mat nscm = cv::Mat(cv::Size(scaling*width, scaling*height), CV_8UC1); //New Scale Candidate Mask
-	std::cout << "Scaling: " << scaling << ", new: width = " << nscm.size().width << ", height = " << nscm.size().height << std::endl; 
+	//std::cout << "Scaling: " << scaling << ", new: width = " << nscm.size().width << ", height = " << nscm.size().height << std::endl; 
 	//fill in this new scaled image
 	for(int x = 0; x < nscm.size().width; x++){
 		for(int y = 0; y<nscm.size().height; y++){

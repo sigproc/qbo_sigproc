@@ -278,7 +278,7 @@ std::string descriptor::HODstring(){
 	for( int j = 0; j < HOD.total(); j++){
 		float f = HOD.at<float>(cv::Point(0,j));
 		if( f != 0.0){
-			stringStream << j << ':' << HOD.at<float>(cv::Point(0,j)) << ' ';
+			stringStream << j+1 << ':' << HOD.at<float>(cv::Point(0,j)) << ' ';
 		}
 	}
 	stringStream << '#' <<'\n';

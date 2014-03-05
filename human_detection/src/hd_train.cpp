@@ -440,6 +440,10 @@ int main ( int argc, char **argv){
 	std::string path_session_log = ANNOTDIR;
 	path_session_log.append(bag + "session/" + s_tag + "/log.txt");
 
+	std::string path_comp_log = ANNOTDIR;
+	path_comp_log.append(bag);
+	path_comp_log.append(COMPLOG);
+
 	//Open session files
 	std::ofstream s_boxes;
 	s_boxes.open(path_session_boxes.c_str());
@@ -448,19 +452,45 @@ int main ( int argc, char **argv){
 	std::ofstream s_log;
 	s_log.open(path_session_log.c_str());
 
-	std::list<std::string>::iterator im_file;
-	//and print out
-	/*for(im_file = frames.begin(); im_file != frames.end(); im_file++){
-		std::cout << " " << *im_file << std::endl;
+	//Open complete log file to find last entry
+	std::ifstream c_log((path_comp_log.c_str()) );
+	//get to last line
+	std::string line, last_line;
+	if(c_log.is_open() ){
+		while ( std::getline (c_log,line) ){
+			last_line = line;
+		}
+		c_log.close();
 	}
-	std::cout << std::endl;*/
-
-	//get first frame
+	else{
+		std::cout << "ERROR: Could not open /complete/log.txt file." << std::endl;
+		return EXIT_FAILURE;
+	}
+	
 	std::list<std::string>::iterator first_it;
-	first_it = frames.begin();
-	std::string first_frame = *first_it;
+	if( !last_line.empty()){
+		//we know that the filename is the last 12 chars
+		size_t pos = last_line.find_last_of("f");
+		std::string first_frame = last_line.substr(pos, last_line.length() - pos);
+		first_it = find(frames.begin(),frames.end(), first_frame);
 
+		if(first_it != frames.end()){
+			std::cout << "Last Tagging was exited on file: " << first_frame << std::endl;
+			std::cout << "Tagging continuing from this frame." << std::endl;
+		}
+		else {
+			std::cout << "ERROR: Last frame: " << first_frame << " could not be found in directory." << std::endl;
+			return EXIT_FAILURE;
+		}
+	}
+	else{
+		std::cout<< "Starting from the first frame." << std::endl;
+		first_it = frames.begin();
+	}
 
+	//now only run from first frame
+	std::list<std::string>::iterator im_file;
+	train_frame f;
 	for(im_file = first_it; im_file != frames.end(); im_file++){
 		//Get each mat and display
 		std::string f_dir = path + *im_file;
@@ -475,13 +505,13 @@ int main ( int argc, char **argv){
 			//cv::imshow("WINDOW", inframe);
 			//cv::waitKey(100);
 
-
-			train_frame f = train_frame(*im_file, inframe, &s_boxes, &s_descriptors, &s_log);
+			std::cout << "Opened: " << *im_file << std::endl;
+			f = train_frame(*im_file, inframe, &s_boxes, &s_descriptors, &s_log);
 			bool exit = false;
 			if(tag_frames){
 				f.tag_frame(&exit);
 				if(exit){
-					f.save_session(bag,s_tag, first_frame);
+					f.save_session(bag,s_tag, *first_it);
 					return 0;
 				}
 			}
@@ -491,6 +521,8 @@ int main ( int argc, char **argv){
 
 		}
 	}
+	std::cout << "End of Frames." << std::endl;
+	f.save_session(bag,s_tag, *first_it);
 
 return 0;
 }
@@ -605,10 +637,18 @@ void classify_candidates(std::vector<candidate> candidates, std::ofstream * desc
 			it->im.convertTo(display, CV_8UC1,255.0/maxval);
 			cv::imshow("tag_candidate", display);
 			
+			char c;
+			int tmp;
+			tmp = classification;
 			//wait until classification is complete
-			while(classification == 0){
-				cv::waitKey(15);
+			while(c != 32){
+				c = (char)cv::waitKey(15);
+				if( tmp != classification){
+					tmp = classification;
+					std::cout << "Classification: " << classification << std::endl;
+				}
 			}
+			c = 'a';
 
 			//
 			candidate_descriptor.classification = classification;
