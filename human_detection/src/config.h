@@ -61,7 +61,7 @@
 //Training params
 #define DATADIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/"
 #define MODEL "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/model/model0"
-#define SVMDIR "/home/sam/cued-masters/src/SVMLight/"
+#define SVMDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/SVMLight/"
 #define FRAMESDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/bag_frames/"
 #define ANNOTDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/annotations/"
 #define COMPLOG "complete/log.txt"
