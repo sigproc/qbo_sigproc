@@ -92,7 +92,7 @@ std::vector<candidate> merge_and_filter(image<float> *im, universe * u, int widt
 		int size = it->second.size();
 
 		//if the candidate is smaller than the minimum width or height
-		if( (itc->real_width < CANDIDATE_MIN_WIDTH) || (itc->real_height < CANDIDATE_MIN_HEIGHT) || (size/(p_height*p_width) < CANDIDATE_MIN_DENSITY) ){
+		if( (itc->real_width < CANDIDATE_MIN_WIDTH) || (itc->real_height < CANDIDATE_MIN_HEIGHT) /*|| (size/(p_height*p_width) < CANDIDATE_MIN_DENSITY) */){
 			//search for larger candidates (i.e. from end() to where we are now; itc)
 			cv::Point centrexz = cv::Point(itc->centre.x, itc->centre.z);
 			///*			

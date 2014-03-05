@@ -1,6 +1,8 @@
 #ifndef CONFIG
 #define CONFIG
 
+//#define QBO
+
 //Select which images to show from running
 #define SHOWDEPTHIM true
 #define SHOWDEPTHSEG false
@@ -59,14 +61,30 @@
 #define HEURISTIC_WIDTH
 
 //Training params
-#define DATADIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/"
-#define MODEL "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/model/model0"
-#define SVMDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/SVMLight/"
-#define FRAMESDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/bag_frames/"
-#define ANNOTDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/annotations/"
+#ifdef QBO
+	#define DATADIR "/home/qbo/cued-masters/src/qbo_sigproc/human_detection/data/"
+	#define MODEL "/home/qbo/cued-masters/src/qbo_sigproc/human_detection/data/model/model0"
+	#define SVMDIR "/home/qbo/cued-masters/src/qbo_sigproc/human_detection/SVMLight/"
+	#define FRAMESDIR "/home/qbo/cued-masters/src/qbo_sigproc/human_detection/data/bag_frames/"
+	#define ANNOTDIR "/home/qbo/cued-masters/src/qbo_sigproc/human_detection/data/annotations/"
+
+#else
+
+	#define DATADIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/"	
+	#define MODEL "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/model/model0"
+	#define SVMDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/SVMLight/"
+	#define FRAMESDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/bag_frames/"
+	#define ANNOTDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/annotations/"
+
+#endif
+
+
 #define COMPLOG "complete/log.txt"
 #define COMPBOXES "complete/boxes"
 #define COMPDESC "complete/descriptors"
+
+
+
 
 
 
