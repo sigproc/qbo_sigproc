@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>       /* isnan, sqrt */
@@ -15,7 +17,7 @@
 #include "utilities.h"
 
 
-#include "config.h"
+
 
 
 /*********************************************************************************
@@ -158,12 +160,12 @@ void train_frame::tag_frame(bool * exit){
 				}
 				std::cout << im_filename << " ";
 				std::cout << box_start.x << " " << box_start.y << " ";
-				std::cout << box_end.x - box_start.x << " " << box_end.x - box_start.x << " ";	
+				std::cout << box_end.x - box_start.x << " " << box_end.y - box_start.y << " ";	
 				std::cout << (int)vis << std::endl;
 
 				*s_boxes << im_filename << " ";
 				*s_boxes << box_start.x << " " << box_start.y << " ";
-				*s_boxes << box_end.x - box_start.x << " " << box_end.x - box_start.x << " ";	
+				*s_boxes << box_end.x - box_start.x << " " << box_end.y - box_start.y << " ";	
 				*s_boxes << (int)vis << std::endl;
 				//break; This is deliberatly ignored so that after a 'hold' there is a reset
 				count++;

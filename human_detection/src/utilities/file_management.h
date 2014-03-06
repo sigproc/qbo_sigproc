@@ -1,11 +1,12 @@
-#ifndef UTILITIES_H
-#define UTILITIES_H
+#ifndef FILEMANAGEMENT_H
+#define FILEMANAGEMENT_H
 
 
 #include <dirent.h>
 #include <string>
 #include <time.h>
 #include <sys/stat.h>
+#include "../config.h"
 
 
 /**********************COMMENTS***************************
@@ -283,5 +284,145 @@ bool create_new_session(std::string bag, std::string  * session){
 	return success;
 
 }
+
+bool build_new_bag_tree(std::string bag){
+
+	std::string root = DATADIR;
+	std::string bagdir = root + bag;
+	std::string tagsdir = bagdir + TAGS;
+	std::string framesdir = bagdir + FRAMES;
+	std::string descdir = bagdir + DESC;
+	std::string compdir = bagdir + COMP;
+	std::string t_log = bagdir + TAGLOG;
+	std::string c_log = bagdir + CLASSIFLOG;
+
+	std::list<std::string> dirs;
+	dirs.push_back(bagdir);
+	dirs.push_back(tagsdir);
+	dirs.push_back(framesdir);
+	dirs.push_back(compdir);
+	dirs.push_back(descdir);
+	dirs.push_back(descdir + METRIC + "/");
+	dirs.push_back(descdir + SEG + "/");
+	dirs.push_back(descdir + FILLED + "/");
+
+	std::list<std::string> files;
+	files.push_back(t_log);
+	files.push_back(c_log);
+	files.push_back(compdir + METRIC);
+	files.push_back(compdir + SEG);
+	files.push_back(compdir + FILLED);
+	files.push_back(compdir + BOX_HITS);
+
+
+	std::list<std::string>::iterator it;
+
+	// 1)build bag directory
+
+	// 2) build tags directory
+
+	// 3) build descriptors directory
+
+	// 4) build complete directory
+	
+	for(it = dirs.begin(); it != dirs.end(); it++){
+		if(mkdir( it->c_str(), 0777)){
+			std::cout << "ERROR: Build_new_bag_tree failed at " <<  *it << std::endl;
+			return false;
+		}
+	}
+
+
+	// 5) Create Tagging log file
+
+	// 6) create classification log
+
+	// 7) create complete files (4)
+
+	FILE * pFile;
+
+	for(it = files.begin(); it != files.end(); it++){
+		pFile = fopen ( it->c_str(), "w" );
+		if (pFile!=NULL){
+			fclose (pFile);
+		}
+		else{
+			std::cout << "ERROR: Build_new_bag_tree failed at " <<  *it << std::endl;
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+bool build_frame_files(std::string bag, std::string frame){
+
+	std::string root = DATADIR;
+	std::string bagdir = root + bag;
+	std::string tagsdir = bagdir + TAGS + frame;
+	std::string descdir = bagdir + DESC;
+
+	std::list<std::string> files;
+	files.push_back(tagsdir);
+	files.push_back(descdir + METRIC + "/" + frame);
+	files.push_back(descdir + SEG + "/" + frame);
+	files.push_back(descdir + FILLED + "/" + frame);
+
+	std::list<std::string>::iterator it;
+	
+	FILE * pFile;
+
+	for(it = files.begin(); it != files.end(); it++){
+
+		pFile = fopen ( it->c_str(), "w" );
+		if (pFile!=NULL){
+			fclose (pFile);
+		}
+		else{
+			std::cout << "ERROR: build_frame_files failed at " <<  *it << std::endl;
+			return false;
+		}
+	}
+	return true;
+}
+
+std::list<std::string> get_frame_strs(std::string bag, bool &success){
+
+	success = true;
+
+	std::string path = DATADIR + bag + FRAMES;
+	
+	DIR *dir;
+	struct dirent *ent;
+	std::list<std::string> frames;
+	if ((dir = opendir (path.c_str())) != NULL) {
+		// print all the files and directories within directory 
+		while ((ent = readdir (dir)) != NULL) {
+			frames.push_back(ent->d_name);
+		}
+		closedir (dir);
+	} 
+	else {
+		// could not open directory 
+		perror ("");
+		std::cout << "ERROR: " << path << " does not exist. " << std::endl;
+		success = false;
+	}
+
+	//sort into numerical order
+	frames.sort();
+	frames.remove(".");
+	frames.remove("..");
+
+	//check that it is not empty
+	if(frames.empty()){
+		std::cout << "ERROR: " << path << " contains no frames. " <<std::endl;
+		success = false;
+	}
+
+	return frames;
+}
+
+
 
 #endif

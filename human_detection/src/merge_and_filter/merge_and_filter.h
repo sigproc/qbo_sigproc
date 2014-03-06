@@ -81,18 +81,23 @@ std::vector<candidate> merge_and_filter(image<float> *im, universe * u, int widt
 		}
 		
 	}
+
+	//free up some memory
+	components.clear();
 	
 	//sort vector into order, largest first. (given we have overloaded the '<' operator to work with size)
 	std::sort(candidates.rbegin(), candidates.rend());
 
 	for(std::vector<candidate>::iterator itc = candidates.begin(); itc != candidates.end(); itc++){
 		//std::cout << "Candidate Size: " << itc->size() << std::endl;
-		int p_height = it->second.ymax - it->second.ymin;
-		int p_width = it->second.xmax - it->second.xmin;
+		int p_height = std::max(it->second.ymax - it->second.ymin,1);
+		int p_width = std::max(it->second.xmax - it->second.xmin,1);
 		int size = it->second.size();
-
+		if(p_height*p_width == 0){
+			std::cout << "Zero area found" << std::endl;
+		}
 		//if the candidate is smaller than the minimum width or height
-		if( (itc->real_width < CANDIDATE_MIN_WIDTH) || (itc->real_height < CANDIDATE_MIN_HEIGHT) /*|| (size/(p_height*p_width) < CANDIDATE_MIN_DENSITY) */){
+		if( (itc->real_width < CANDIDATE_MIN_WIDTH) || (itc->real_height < CANDIDATE_MIN_HEIGHT) || (size/(p_height*p_width) < CANDIDATE_MIN_DENSITY) ){
 			//search for larger candidates (i.e. from end() to where we are now; itc)
 			cv::Point centrexz = cv::Point(itc->centre.x, itc->centre.z);
 			///*			
@@ -104,13 +109,7 @@ std::vector<candidate> merge_and_filter(image<float> *im, universe * u, int widt
 				float y_distance = abs(itc->centre.y-itc1->centre.y);
 				
 				if( (xz_distance < DELTAXZ) || (y_distance < DELTAY) ){
-
-					if( itc->merge(*itc1) ){
-						//if merging is successful, remove smaller candidate from list
-						//itc1 = candidates.erase(itc1);
-						//TODO
-						//itc->erased = true;
-					}
+					 itc->merge(*itc1);
 				}
 			}//*/
 		}

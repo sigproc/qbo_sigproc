@@ -280,9 +280,9 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 	
 
 	//wait to smooth things out
-	if (total_time < 500){
+	/*if (total_time < 500){
 		cv::waitKey( 500 - total_time);
-	}
+	}*/
 
 	
 }

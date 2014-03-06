@@ -11,7 +11,7 @@
 
 	<node pkg="rosbag" type="play" name="rosbag" output="screen" args=" --clock $(arg bag_path)"/>
 	<node pkg="human_detection" type = "save_metric_frames" name="save_metric_frames">
-		#<param name="dir" value="lab" />
+		<param name="dir" value="$(arg bag_file)" />
 		#cant param only works if directory exists!
 	</node>
 

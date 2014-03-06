@@ -61,14 +61,14 @@
 #define HEURISTIC_WIDTH
 
 //Training params
-#ifdef QBO
+/*#ifdef QBO
 	#define DATADIR "/home/qbo/cued-masters/src/qbo_sigproc/human_detection/data/"
 	#define MODEL "/home/qbo/cued-masters/src/qbo_sigproc/human_detection/data/model/model0"
 	#define SVMDIR "/home/qbo/cued-masters/src/qbo_sigproc/human_detection/SVMLight/"
 	#define FRAMESDIR "/home/qbo/cued-masters/src/qbo_sigproc/human_detection/data/bag_frames/"
 	#define ANNOTDIR "/home/qbo/cued-masters/src/qbo_sigproc/human_detection/data/annotations/"
-
-#else
+*/
+//#else
 
 	#define DATADIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/"	
 	#define MODEL "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/model/model0"
@@ -76,7 +76,23 @@
 	#define FRAMESDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/bag_frames/"
 	#define ANNOTDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/annotations/"
 
-#endif
+//#endif
+
+//directory definitions
+#define FRAMES "frames/"
+#define TAGS "tags/"
+#define DESC "descriptors/"
+#define COMP "complete/"
+#define METRIC "metric"
+#define SEG "segmented"
+#define FILLED "filled"
+#define BOX_HITS "box_hits"
+#define TAGLOG "Tagging_log"
+#define CLASSIFLOG "Classification_log"
+
+
+//training params
+#define CAND_OVRLP_TRUE 0.4
 
 
 #define COMPLOG "complete/log.txt"
