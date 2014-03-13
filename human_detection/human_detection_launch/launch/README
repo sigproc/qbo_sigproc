@@ -1,18 +1,21 @@
-THIS README IS OUT OF DATE, IGNORE: 17/1/2014
+These launch files allow bag files of choice, which exist within this directory, to be run under a variety of different conditions.
+Each launch file has 2 variables which allow different bag files to be run, or for these scripts to run on other laptops.
 
-Although a bash file exists, as you may wish to supply your own path to your own bagfile, I suggest copying the bash file into your
-terminal with the following addition where <bag_path> is the path to your bagfile. Bagfiles should contain:
-/camera/depth/image_raw
-/camera/rgb/image_raw
+call:
+roslaunch human_detection launchfile.launch user:=$USER bag_file:=bagfile.bag
 
-at the minimum.
+to initialise the launch file with bagfile bagfile.bag, from the directory with at /home/$USER/cued-masters/src/qbo_sigproc/human_detection/bagfiles/
 
-$rosparam set /use_sim_time true
-$roslaunch seg_depth openni_sim.launch bag_paht:=<bag_path>
+playall.launch:
+ - launch rosbag play with the bag_file and the node human_detection_2 - for demonstrating run-time detection
 
-Alternatively you can change the default bag path in the launch file and just run the bash file.
+playbag.launch: 
+ - launch rosbag play with the bag_file and nothing else
 
-source openni_sim.bash
+playallwValgrind.launch:
+ - as playall.launch, but running Valgrind to evaluated performance convert_bag_to_frames.launch - launches rosbag play with bag_file and node 'save_metric_frames' which saves each frame as an individual openCV floating point matrix for use in training and tagging. Frames are written to the directory DATADIR/bag_file/FRAMES as defined in config.h when the node is compiled. To change these directories, change the config file and run catkin_make from the cued-masters directory.
 
-This will set the time params and then call openni_sim.launch, a launch file to launch openni without the drivers,
-to launch the bag file in ../bagfiles/raw.bag and the node seg_color, to demonstrate segmentation.
+seebag.launch:
+ - launch rosbag play with image_view. Good for verifying that a bag file works, and to visualise its content. Note that this launch file is not designed to be called directly, but from the bash file "testbag.bash" in human_detection/bagfiles/.
+
+

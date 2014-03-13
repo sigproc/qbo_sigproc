@@ -1,0 +1,102 @@
+Last updated: 13/3/14
+This readme describes the contents of these sourcefiles, and how they can be compiled and run.
+
+config.h:
+ - This header contains all of the system parameters, and more importantly the directories when training data is stored. It is important that these are constitent with one another, as the code has been written to build the directories as required when new bagfiles are trained or tagged.
+
+DATA DIRECTORY HIERARCHY
+
+human_detection/data/
+					|
+					---bag_file/ 	-
+					|			  	|
+					|			  	--- frames/ ---	---	-
+					|				|					|
+					|				|					--- frame_00000.jsc68, frame_00001.jsc68, frame_00002.jsc68, ... 
+					|				|
+					|			  	--- tags/ 	---	---	-
+					|				|					|
+					|				|					--- frame_00000.jsc68, frame_00001.jsc68, frame_00002.jsc68, ... 
+					|				|
+					|				--- complete/	---	-
+					|				|					|
+					|				|					--- metric
+					|				|					|
+					|				|					--- filled
+					|				|					|
+					|				|					--- segmented
+					|				|					|
+					|				|					--- box_hits
+					|				|
+					|				--- descriptors/ 	-
+					|				|					|
+					|				|					--- metric
+					|				|					|
+					|				|					--- filled
+					|				|					|
+					|				|					--- segmented
+					|				|
+					|				--- Classification_log
+					|				|
+					|				--- Tagging_log
+					|
+					--- bag_file2\...
+
+DATA DIRECTORY CONTENTS
+
+In the data directory, the analysis of each bag file is saved in its own directory:
+
+ - The raw 32bit floating point depth image frames are saved as frame_#####.jsc68, and can be decoded into openCV with functions in utilities/file_management.h
+
+- Each bag_file directory contains a tags directory with tags for each frame. Each frame has its own document with bounding boxes in each frame described line by line, layed out as:
+
+	bag frame_name TLX TLY W H VIS
+
+Each frame has its own document so that frames can be excluded easily if necessary.
+
+- The complete directory contains all descriptors from the frames in one file, read to be used by SVMLight. We will collect descriptors on the metric depth images, filled in depth images and the segmented shape.
+
+- Descriptors frame by frame are also saved so that frames can be exluded if necessary.
+
+- We also record logs of the classification process and Tagging process for debugging issues.
+
+ROSNODES
+
+human_detection.cpp:
+ - runs human detection with a single output image showing the candidates and +ve responses.
+
+human_detection_2.cpp:
+ - run human detection with multiple output images, and slower for debugging
+
+(in old)hd_train.cpp:
+ - trains candidates and required user to tags boxes seperately.
+
+hd_train_2.cpp:
+ - Automated training using candidate bounding boxes and tagged boxes according to the file system above.
+
+hd_tag.cpp:
+ - Runs a sub-part of hd_train to allow the user to tag frames one by one, saving tags according to the directory architecture shown above.
+
+save_metric_frames.cpp
+ - Subscribes to /camera/depth/image and saves each frame in the appropriate location according to the directory architecture show above.
+
+SOURCE DIRECTORIES
+
+
+segment_depth:
+ - Tweaks Felzwen... fast segmentation C-code to run with openCV.
+
+classification:
+- contains two classes for tagging boxes, parsing boxes from the tag files and for creating the HODdescriptor from a candidate image
+
+merge_and_filter:
+ - contains two classes for merging segmented depth and normal images and creating the candidate images
+
+utilities:
+ - contains two classes for training frames and creating files/directories as necessary for the training and tagging process.
+
+old:
+ - Copies of previous versions of human_detection nodes for reference.
+
+
+
