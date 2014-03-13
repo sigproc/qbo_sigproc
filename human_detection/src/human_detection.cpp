@@ -101,7 +101,7 @@ void Human_Detector::imageCallback(const sensor_msgs::ImageConstPtr& original_im
 	cv::minMaxIdx(im_out, &minval, &maxval);
 	//rescale for viewing
 	im_out.convertTo(im_out, CV_8UC1,255.0/maxval);
-	cv:cvtColor(im_out, im_out, CV_GRAY2BGR);
+	cv::cvtColor(im_out, im_out, CV_GRAY2BGR);
 	//cv::imshow(WINDOW, im_out);
 	//cv::waitKey(3);
  

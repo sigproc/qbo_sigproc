@@ -27,11 +27,13 @@ class box_tag{
 	std::string tagged_string();
 	//std::string tag();
 	void inc_count();
+	std::string details();
 	
 	void set_box(int tlx, int tly, int width, int height);
 	void set_vis(int v);
 	void set_bag(std::string bag);
 	void set_frame(std::string frame);
+	int get_count();
 	
 	box_tag();
 	box_tag(std::string tag_line); //create box object from tagged data file
@@ -78,12 +80,23 @@ box_tag::box_tag(int tlx_, int tly_, int width_, int height_, std::string bag_, 
 box_tag::box_tag(){
 }
 
+std::string box_tag::details(){
+	char buff[50];
+	std::sprintf(buff, "%d %d %d %d %d %d", box.x, box.y, box.width, box.height, vis, count);
+	std::string deets = buff;
+	return deets;
+}
+
 void box_tag::set_box(int tlx, int tly, int width, int height){
 	box = cv::Rect(tlx,tly,width,height);
 }
 
 void box_tag::set_vis(int v){
 	vis = v;
+}
+
+int box_tag::get_count(){
+	return count;
 }
 
 void box_tag::set_bag(std::string bag_){
@@ -94,6 +107,8 @@ void box_tag::set_frame(std::string frame_){
 }
 
 bool box_tag::verify_frame(std::string str){
+	//std::cout << "frame from file: " << frame << std::endl;
+	//std::cout << "frame in analysis: " << str << std::endl;
 	return str == frame;
 }
 
@@ -181,11 +196,21 @@ bool box_tag::is_cand_positive(cv::Rect cand){
 	}							//	_
 								//	_
 
-	int overlap_area = dx * dy;
-	int cand_area = cand.width * cand.height;
+	float overlap_area = dx * dy;
+	float cand_area = cand.width * cand.height;
+
+	float percent_overlap = overlap_area/cand_area;
+
+	//std::cout << "Overlaps, dx: " << dx << " dy: " << dy << std::endl;
+	//std::cout << "cand.width: " << cand.width << " cand.height: " << cand.height << std::endl;
+	//std::cout << "box.width: " << box.width << " box.height: " << box.height << std::endl;
+	//std::cout << "Candidate: left: " << clx << " right: " << crx << std::endl;
+	//std::cout << "Candidate: top: " << cty << " bottom: " << cby << std::endl;
+	//std::cout << "Overlap Area: " << overlap_area << " Cand_area: " << cand_area << std::endl;
+	std::cout << "Percent overlap: " << percent_overlap << std::endl;
 
 	if( cand_area != 0){
-		if(overlap_area / cand_area > CAND_OVRLP_TRUE){
+		if( ( percent_overlap ) > CAND_OVRLP_TRUE){
 			return true;
 		}
 	}

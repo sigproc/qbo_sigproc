@@ -121,3 +121,6 @@ target_link_libraries(hd_train ${catkin_LIBRARIES})
 
 add_executable(hd_train_2 src/hd_train_2.cpp src/segment_depth/segment.cpp src/utilities/file_management.h src/utilities/frame.h  src/classification/descriptor.h  src/classification/box_tag.h src/segment_depth/segment-image.h src/segment_depth/segment-graph.h src/segment_depth/disjoint-set.h src/segment_depth/pnmfile.h src/merge_and_filter/merge_and_filter.h src/merge_and_filter/candidate.h)
 target_link_libraries(hd_train_2 ${catkin_LIBRARIES})
+
+add_executable(hd_tag src/hd_tag.cpp src/segment_depth/segment.cpp src/utilities/file_management.h src/utilities/frame.h  src/classification/descriptor.h  src/classification/box_tag.h src/segment_depth/segment-image.h src/segment_depth/segment-graph.h src/segment_depth/disjoint-set.h src/segment_depth/pnmfile.h src/merge_and_filter/merge_and_filter.h src/merge_and_filter/candidate.h)
+target_link_libraries(hd_tag ${catkin_LIBRARIES})

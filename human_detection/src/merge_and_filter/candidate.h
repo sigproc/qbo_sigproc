@@ -17,6 +17,7 @@ class candidate {
 		//descriptor requirements
 		cv::Rect boundingBox;
 		cv::Mat im;
+		int classification;
 
 		//TODO
 		bool erased;
@@ -92,6 +93,7 @@ candidate::candidate(int x,int y, float z, int i){
 	max_inlier_fraction = 0;
 	//std::cout << "New Candidate: (" << x << "," << y << "," << z << ") with id: " << id << std::endl;
 	pts.push_back(cv::Point3f(x,y,z));
+	classification = -1;
 }
 
 candidate::candidate(){

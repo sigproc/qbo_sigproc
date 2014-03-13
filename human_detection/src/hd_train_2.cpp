@@ -15,7 +15,7 @@
 
 #include "config.h"
 
-
+#define WAIT 50
 /*********************************************************************************
 **************************  Current Comments  ************************************
 
@@ -132,6 +132,7 @@ int main ( int argc, char **argv){
 	std::ofstream f_compmetric(compmetric.c_str());
 	std::ofstream f_compseg(compseg.c_str());
 	std::ofstream f_comphits(comphits.c_str());
+	int complete_lines = 0;
 
 	std::ofstream f_clog(c_log.c_str());
 
@@ -141,13 +142,21 @@ int main ( int argc, char **argv){
 	std::ofstream f_descseg;
 
 	std::list<std::string>::iterator im_file;
-	frame f;
+	//frame f;
+	int num_candidates = 0;
 	for(im_file = frames.begin(); im_file != frames.end(); im_file++){
+		frame f;
 		std::string path = DATADIR + bag + FRAMES + *im_file;
+		int start_lines = complete_lines;
+	
+
+		std::list<box_tag>::iterator b_it;
+		std::vector<candidate>::iterator c_it;
+
 		//construct frame
 		f = frame(path, load_success);
 		if(!load_success){
-			f_clog << *im_file << " :failed to load frame" << std::endl;
+			f_clog << "ERROR: Failed to load frame - " << *im_file << std::endl;
 		}
 		else{
 
@@ -157,24 +166,114 @@ int main ( int argc, char **argv){
 			std::string hack = "frame_00000.jsc68";
 
 			//get list of boxes
-			std::list<box_tag> tagged_boxes = get_tagged_boxes(bag, /**im_file*/hack, load_success);
+			std::list<box_tag> tagged_boxes = get_tagged_boxes(bag, *im_file, load_success);
 			if(!load_success){
-				f_clog << *im_file << " :failed to load some tags" << std::endl;
+				f_clog << "WARN: In frame - " << *im_file << ", failed to load some tags" << std::endl;
 			}
 
-			std::list<box_tag>::iterator it;
-			for (it = tagged_boxes.begin(); it != tagged_boxes.end(); it++ ){
-				cv::rectangle(tmp, it->box, cv::Scalar(0,0,255), 2);
-			}
+			/*for (b_it = tagged_boxes.begin(); b_it != tagged_boxes.end(); b_it++ ){
+				cv::rectangle(tmp, b_it->box, cv::Scalar(0,0,255), 2);
+			}*/
 			
-			
-			cv::imshow("window", tmp);
+			//get candidates
+			f.get_candidates();
 
+			if( f.valid_candidates() != 0) {
+			
+				//open individual frame files
+				f_descfill.open( (descfill + *im_file).c_str() );
+				f_descmetric.open( (descmetric + *im_file).c_str() );
+				f_descseg.open( (descseg + *im_file).c_str() );
+			
+				//loop through each candidate
+				for(c_it = f.candidates.begin(); c_it != f.candidates.end(); c_it++){
+					//only for 'non-erased' candidates!
+					if( !(c_it->erased) ){
+
+						//show white candidate
+						cv::rectangle(tmp, c_it->boundingBox, cv::Scalar(255,255,255), 2);
+
+						//compare candidate with each tagged box to determine whether it is positive of not
+						for (b_it = tagged_boxes.begin(); b_it != tagged_boxes.end(); b_it++ ){
+							//draw blue box to show tag
+							cv::rectangle(tmp, b_it->box, cv::Scalar(255,0,0), 2);
+							cv::waitKey(WAIT);
+							//determine whether positive of not
+							if( b_it->is_cand_positive(c_it->boundingBox) ){
+								b_it->inc_count();
+								c_it->classification = 1;
+								//show red for match
+								cv::rectangle(tmp, c_it->boundingBox, cv::Scalar(0,0,255), 2);
+								cv::waitKey(WAIT);
+							}
+						}
+
+						cv::imshow("window", tmp);
+						cv::waitKey(WAIT);
+					
+						//now get create and calc untouched descriptor
+						descriptor d_metric = descriptor(c_it->im);
+						d_metric.compute_descriptor();
+						d_metric.classification = c_it->classification;
+
+						/*TODO
+						cv::Mat cand_filled = fill(it->im);				
+						descriptor d_filled = descriptor(cand_filled);
+						d_filled.compute_descriptor();
+						d_filled.classification = c_it->classification;
+
+						cv::Mat cand_segmented = get_segmented_cand(it->im);				
+						descriptor d_seg = descriptor(cand_filled);
+						d_seg.compute_descriptor();
+						d_seg.classification = c_it->classification;
+						*/				
+				
+						//now write to 'complete' files first
+						f_compmetric << d_metric.HODstring();
+						//f_compfill << d_filled.HODstring();
+						//f_compseg << d_seg.HODstring();
+
+						//count how many lines/descriptors have been written
+						complete_lines++;
+
+						//now write to individual frame folders
+						f_descmetric << d_metric.HODstring();
+						//f_descfill << d_filled.HODstring();
+						//f_descseg << d_seg.HODstring();
+
+						num_candidates++;
+
+						//close opened files
+						f_descmetric.close();
+						//f_descfill.close();
+						//f_descseg.close();
+					}
+				}
+			}
+
+			//and write to hits for each tagged box, from all candidates in frame
+			int hits = 0;
+			for (b_it = tagged_boxes.begin(); b_it != tagged_boxes.end(); b_it++ ){
+				f_comphits << bag << " " << *im_file << " " << b_it->details() << std::endl;
+				//count how many of the frames had hits
+				if(b_it->get_count() > 0 ) hits++;
+			} //We can evaluate tagged hit and miss rations using the counts values, and the vis value to determin what we count
+			//record activity in classificatin log
+			f_clog << bag.substr(0,bag.length()-1) << " " << *im_file << " " << "Boxes:" << tagged_boxes.size() << " hits:" << hits << " cands:" << num_candidates - start_lines << " lines:" << start_lines << "->" << num_candidates << std::endl;
+
+				
 		}
-		cv::waitKey(100);
-		
+		f.erase_ims();
 	}
+
+	f_compfill.close();
+	f_compmetric.close();
+	f_compseg.close();
+	f_comphits.close();
+	f_clog.close();
+
+	std::cout << "FINISHED" << std::endl;
 	
-return 0;
+	return 0;
 }
 

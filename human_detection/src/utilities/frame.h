@@ -32,9 +32,11 @@ class frame {
 	frame();
 	frame(std::string path, bool &success);
 	~frame();
+	void erase_ims();
 
 	//preprocessing
 	void get_candidates();
+	int valid_candidates();
 
 	//visualisation
 	cv::Mat get_normalIm(bool with_cand_boxes);
@@ -86,16 +88,7 @@ frame::frame(std::string path, bool &success){
 }
 //desctructer
 frame::~frame(){
-	if(!candidates.empty()){
-		//Clean up image containers
-		delete subsampled;
-		delete jointseg;
-		delete normalIm;
-		delete depthseg;
-		delete normalseg;
-		delete u_segmented;
-		std::cout << "frames memory deleted" << std::endl;
-	}
+	
 }
 
 
@@ -162,7 +155,35 @@ void frame::get_candidates(){
 	candidates = merge_and_filter(subsampled, u_segmented, sub_width, sub_height, depth_32FC1);
 }
 
-//visualisation
+
+int frame::valid_candidates(){
+
+	int count = 0;
+
+	for(std::vector<candidate>::iterator it = candidates.begin(); it != candidates.end(); it++) {
+		if( !(it->erased) ) count++;
+	}
+
+	return count;
+}
+
+void frame::erase_ims(){
+	if(!candidates.empty()){
+		//Clean up image containers
+		delete subsampled;
+		delete jointseg;
+		delete normalIm;
+		delete depthseg;
+		delete normalseg;
+		delete u_segmented;
+		std::cout << "frames memory deleted" << std::endl;
+	}
+}
+/**************************************************************
+
+						visualisations
+
+***************************************************************/
 cv::Mat frame::get_normalIm(bool with_cand_boxes){
 	return rgbIm_to_Mat(normalIm, with_cand_boxes);
 }
@@ -181,6 +202,7 @@ cv::Mat frame::get_depthIm(bool with_cand_boxes){
 	double minval, maxval;
 	cv::minMaxIdx(depth_32FC1, &minval, &maxval);
 	depth_32FC1.convertTo(output, CV_8UC1,255.0/maxval);
+	cv::cvtColor(output, output, CV_GRAY2BGR);
 
 	if(with_cand_boxes){
 		if(!candidates.empty()){	
