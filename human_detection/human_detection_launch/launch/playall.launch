@@ -1,6 +1,7 @@
 <launch>
 
-	 <arg name="bag_dir" default="/home/sam/cued-masters/bagfiles/" />
+	 <arg name="bag_dir_old" default="/home/sam/cued-masters/bagfiles/" />
+	 <arg name="bag_dir" default="/home/sam/cued-masters/src/qbo_sigproc/human_detection/bagfiles/" />
 	 <arg name="bag_file" default="raws.bag" />
  	 <arg name="bag_path" default= "$(arg bag_dir)$(arg bag_file)" />
 
@@ -9,7 +10,7 @@
       </include>
 
 	<node pkg="rosbag" type="play" name="rosbag" output="screen" args="-l --clock $(arg bag_path)"/>
-#add '-r 0.1' to the args field to slow down the data stream by 10
+	#add '-r 0.1' to the args field to slow down the data stream by 10
 	<node pkg="human_detection" type = "human_detection_2" name="human_detection_2"/>
 	<node pkg="image_view" type = "image_view" name="image_view" args="image:=/human_detection/candidates"/>
 

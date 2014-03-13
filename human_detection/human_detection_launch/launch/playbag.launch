@@ -1,6 +1,7 @@
 <launch>
 
-	 <arg name="bag_dir" default="/home/sam/cued-masters/bagfiles/" />
+	 <arg name="bag_dir_old" default="/home/sam/cued-masters/bagfiles/" />
+	 <arg name="bag_dir" default="/home/sam/cued-masters/src/qbo_sigproc/human_detection/bagfiles/" />
 	 <arg name="bag_file" default="raws.bag" />
  	 <arg name="bag_path" default= "$(arg bag_dir)$(arg bag_file)" />
 
