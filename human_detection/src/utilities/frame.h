@@ -100,6 +100,8 @@ frame::~frame(){
 ***************************************************************/
 void frame::get_candidates(){
 
+	start = clock();
+
 	//params for conversion
 	int in_width, in_height;
 	int sub_width, sub_height;
@@ -148,11 +150,17 @@ void frame::get_candidates(){
 
 	int num_ccs = 0;
 
+	postPrep = clock();	
+
 	//segment image
 	u_segmented = segment_image1C(subsampled, sigma, Kdepth, Knormal, min_size, &num_ccs, &normalIm, &depthseg, &normalseg, &jointseg);
 
+	postSeg = clock();
+
 	//merge regions
 	candidates = merge_and_filter(subsampled, u_segmented, sub_width, sub_height, depth_32FC1);
+
+	postMerge = clock();
 }
 
 
@@ -176,7 +184,7 @@ void frame::erase_ims(){
 		delete depthseg;
 		delete normalseg;
 		delete u_segmented;
-		std::cout << "frames memory deleted" << std::endl;
+		//std::cout << "frames memory deleted" << std::endl;
 	}
 }
 /**************************************************************

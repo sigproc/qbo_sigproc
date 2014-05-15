@@ -73,12 +73,15 @@ inline bool operator>=(const candidate& lhs, const candidate& rhs){
 	return !operator<(lhs,rhs);
 }
 
-float candidate::calc_real_distance(float depth, int pel, int length, float fov){
+float candidate::calc_real_distance(float depth, int pel_from_lower_left, int length, float fov){
 	
-	float pel_ratio = (float)pel/(length - 1.0);
-	float angular_component = tan(fov/2);
-	return depth*(pel_ratio - 0.5)*angular_component*2; //I think there should be an extra factor of 2 in this term
+	//float pel_ratio = (float)pel/(length - 1.0);
+	//float angular_component = tan(fov/2);
+	//return depth*(pel_ratio - 0.5)*angular_component*2; //I think there should be an extra factor of 2 in this term
 
+	float pel_ratio = float(pel_from_lower_left)/length;
+	float metric_scene_length = depth*2*tan(fov/2);
+	return pel_ratio*metric_scene_length;	
 }
 
 candidate::candidate(int x,int y, float z, int i){
@@ -134,8 +137,10 @@ int candidate::size() const{
 void candidate::calc_real_dims(){
 	float xleft = calc_real_distance(centre.z, xmin, PEL_WIDTH/ALPHA, F_H*3.141592653589793/180);
 	float xright = calc_real_distance(centre.z, xmax, PEL_WIDTH/ALPHA, F_H*3.141592653589793/180);
-	float ybottom = calc_real_distance(centre.z, (PEL_HEIGHT/(2*ALPHA) - ymax), PEL_HEIGHT/ALPHA, F_V*3.141592653589793/180);
-	float ytop = calc_real_distance(centre.z, (PEL_HEIGHT/(2*ALPHA) - ymin), PEL_HEIGHT/ALPHA, F_V*3.141592653589793/180);
+	//float ybottom = calc_real_distance(centre.z, (PEL_HEIGHT/(2*ALPHA) - ymax), PEL_HEIGHT/ALPHA, F_V*3.141592653589793/180);
+	//float ytop = calc_real_distance(centre.z, (PEL_HEIGHT/(2*ALPHA) - ymin), PEL_HEIGHT/ALPHA, F_V*3.141592653589793/180);
+	float ybottom = calc_real_distance(centre.z, (PEL_HEIGHT/ALPHA - ymax), PEL_HEIGHT/ALPHA, F_V*3.141592653589793/180);
+	float ytop = calc_real_distance(centre.z, (PEL_HEIGHT/ALPHA - ymin), PEL_HEIGHT/ALPHA, F_V*3.141592653589793/180);
 
 	real_height = ytop - ybottom;
 	real_width = xright - xleft;
@@ -216,6 +221,9 @@ void candidate::create_candidate_image(cv::Mat &depthim){
 			}*/
 		}
 	}
+
+	//TODO See report for this calculation: it can be done more simply as x_depth = ALPHA*(x_min + x*(x_max - x_min)/fsci.size().width
+	// and y_depth = ALPHA*(y_min + y*(y_max - y_min)/fsci.size().height
 
 	//finally we want to position this sub-candidate image into the candidate image
 	im = cv::Mat(cv::Size(CANDIDATE_WIDTH, CANDIDATE_HEIGHT), CV_32FC1, 0.0/0.0);

@@ -115,7 +115,7 @@ void save_frames::imageCallback(const sensor_msgs::ImageConstPtr& original_image
  
 	//image is stored as 32FC1 in in_msg->image which is of type Mat
 	// container for frame name
-	char frame_cstr[50];
+	char frame_cstr[100];
 	//container for 5 chars
 	std::string five_chars;
 	//pre-pend zeros so depending on size of number so that frame name is a constant length
@@ -124,7 +124,7 @@ void save_frames::imageCallback(const sensor_msgs::ImageConstPtr& original_image
 	if( (frame_count/100) == 0)			five_chars.append("0");
 	if( (frame_count/10) == 0) 			five_chars.append("0");
 	//container for integer count
-	char buffer[10];
+	char buffer[50];
 	sprintf(buffer, "%d", frame_count);
 	//increase frame count
 	frame_count++;
@@ -134,6 +134,7 @@ void save_frames::imageCallback(const sensor_msgs::ImageConstPtr& original_image
 	sprintf(frame_cstr, "frame_%s.jsc68", five_chars.c_str());
 	//convert to string
 	std::string frame = frame_cstr;
+	ROS_INFO("Frame string: %s", frame.c_str());
 	//add directories
 	std::string write_frame_to = DATADIR+bag+FRAMES;
 	std::string tmp;
@@ -142,6 +143,7 @@ void save_frames::imageCallback(const sensor_msgs::ImageConstPtr& original_image
 	struct dirent *ent;
 	dir = opendir(write_frame_to.c_str());
 	if ( dir == NULL ) {// if bag/frames cant be opened...
+		ROS_INFO("Dir: %s cant be opened", write_frame_to.c_str());
 		//see if the bag file folder exists	
 		closedir (dir);
 		tmp = DATADIR + bag;
@@ -154,7 +156,10 @@ void save_frames::imageCallback(const sensor_msgs::ImageConstPtr& original_image
 			}
 		}
 	}
-	
+	else{
+		closedir (dir);
+	}
+	//std::cout << "bag: " << bag << " frame: " << frame << std::endl;
 	//make directies for frames and write to the frame one
 	if( build_frame_files(bag, frame) ){
 			writeMatToFile(in_msg->image, (write_frame_to + frame).c_str() );

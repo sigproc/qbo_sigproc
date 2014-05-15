@@ -64,21 +64,28 @@ ROSNODES
 
 human_detection.cpp:
  - runs human detection with a single output image showing the candidates and +ve responses.
+ - Needs topic /camera/depth/image to be published either through a bag file or live from the robot
 
 human_detection_2.cpp:
  - run human detection with multiple output images, and slower for debugging
+ - Needs topic /camera/depth/image to be published either through a bag file or live from the robot
 
 (in old)hd_train.cpp:
  - trains candidates and required user to tags boxes seperately.
 
 hd_train_2.cpp:
  - Automated training using candidate bounding boxes and tagged boxes according to the file system above.
+ - run using: rosrun human_detection hd_train_2 <bagfileroot>
+ - where <bagfileroot> is the name of the bagfile without .bag at the end, e.g. bedroom1_f
 
 hd_tag.cpp:
  - Runs a sub-part of hd_train to allow the user to tag frames one by one, saving tags according to the directory architecture shown above.
+ - run using: rosrun human_detection hd_tag <bagfileroot>
+ - where <bagfileroot> is the name of the bagfile without .bag at the end, e.g. bedroom1_f
 
 save_metric_frames.cpp
  - Subscribes to /camera/depth/image and saves each frame in the appropriate location according to the directory architecture show above.
+ - FAILS IF RUN DIRECTLY, run from bash file in human_detection/bagfiles
 
 SOURCE DIRECTORIES
 

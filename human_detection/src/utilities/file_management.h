@@ -6,6 +6,8 @@
 #include <string>
 #include <time.h>
 #include <sys/stat.h>
+#include <ros/ros.h>
+
 #include "../config.h"
 
 
@@ -127,7 +129,7 @@ int readFileToMat(cv::Mat &I, std::string path) {
         break;
     // FLOAT ONE CHANNEL
     case CV_32F:
-        std::cout << "Reading CV_32F image" << std::endl;
+        //TODO std::cout << "Reading CV_32F image" << std::endl;
         for (int i=0; i < matWidth*matHeight; ++i) {
             file.read((char*) &fvalue, sizeof(fvalue));
             I.at<float>(i) = fvalue;
@@ -258,6 +260,7 @@ bool create_new_session(std::string bag, std::string  * session){
 
 	if(mkdir(path_session.c_str(), 0777)){
 		std::cout << "create_new_session failed with bag " << bag << std::endl;
+		ROS_INFO("ERROR: create_new_session failed with bag: %s.", bag.c_str());
 		success = false;
 	}
 
@@ -328,6 +331,7 @@ bool build_new_bag_tree(std::string bag){
 	for(it = dirs.begin(); it != dirs.end(); it++){
 		if(mkdir( it->c_str(), 0777)){
 			std::cout << "ERROR: Build_new_bag_tree failed at " <<  *it << std::endl;
+			ROS_INFO("ERROR: Build_new_bag_tree failed at %s.", it->c_str());
 			return false;
 		}
 	}
@@ -348,14 +352,16 @@ bool build_new_bag_tree(std::string bag){
 		}
 		else{
 			std::cout << "ERROR: Build_new_bag_tree failed at " <<  *it << std::endl;
+			ROS_INFO("ERROR: Build_new_bag_tree failed at %s.", it->c_str());
 			return false;
 		}
 	}
-	
 	return true;
 }
 
 bool build_frame_files(std::string bag, std::string frame){
+
+	//std::cout << "bag: " << bag << " frame: " << std::endl;
 
 	std::string root = DATADIR;
 	std::string bagdir = root + bag;
@@ -373,13 +379,14 @@ bool build_frame_files(std::string bag, std::string frame){
 	FILE * pFile;
 
 	for(it = files.begin(); it != files.end(); it++){
-
+		std::cout << "Creating: " << *it << std::endl;
 		pFile = fopen ( it->c_str(), "w" );
 		if (pFile!=NULL){
 			fclose (pFile);
 		}
 		else{
 			std::cout << "ERROR: build_frame_files failed at " <<  *it << std::endl;
+			ROS_INFO("ERROR: build_frame_files failed at %s.", it->c_str());
 			return false;
 		}
 	}
@@ -406,6 +413,7 @@ std::list<std::string> get_frame_strs(std::string bag, bool &success){
 		// could not open directory 
 		perror ("");
 		std::cout << "ERROR: " << path << " does not exist. " << std::endl;
+		ROS_INFO("ERROR: %s does not exist.", path.c_str());
 		success = false;
 	}
 
@@ -417,6 +425,7 @@ std::list<std::string> get_frame_strs(std::string bag, bool &success){
 	//check that it is not empty
 	if(frames.empty()){
 		std::cout << "ERROR: " << path << " contains no frames. " <<std::endl;
+		ROS_INFO("ERROR: %s contains no frames.", path.c_str());
 		success = false;
 	}
 

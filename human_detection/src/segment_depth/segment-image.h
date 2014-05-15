@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
 
-#define NORMALWEIGHTSCALINGFACTOR 1//255/pi gives the values to be in a range that is expect for images (81)
+#define NORMALWEIGHTSCALINGFACTOR 100//255/pi gives the values to be in a range that is expect for images (81)
 
 // random color
 rgb random_rgb(){ 
@@ -137,7 +137,7 @@ edge* create_depth_graph(image<float> *d, int *edgeNum){
 ********Description: Given normal image and 2 pixels ****************
 ******** 			 returns angular difference in rad***************
 *********************************************************************/
-static inline float anglediff(image<cv::Vec3f> *normals, int x1, int y1, int x2, int y2) {
+float anglediff(image<cv::Vec3f> *normals, int x1, int y1, int x2, int y2) {
   
 	float angleRAD = 0;
 	//do the dot product of the two normal vectors

@@ -4,29 +4,21 @@
 //#define QBO
 
 //Select which images to show from running
-/*#define SHOWDEPTHIM true
+#define SHOWDEPTHIM true
 #define SHOWDEPTHSEG false
 #define SHOWNORMALSEG false
 #define SHOWNORMALIM false
-#define SHOWJOINTSEG true
+#define SHOWJOINTSEG false
 #define SHOWCANDIDATES true
-#define SHOWBOXES true*/
-
-#define SHOWDEPTHIM true
-#define SHOWDEPTHSEG true
-#define SHOWNORMALSEG true
-#define SHOWNORMALIM true
-#define SHOWJOINTSEG true
-#define SHOWCANDIDATES false
-#define SHOWBOXES false
+#define SHOWBOXES true
 
 
 //define system parameters
 #define SIGMA 0.5
 #define ALPHA 8
 #define ESS 13
-#define KDEPTH 1.0
-#define KNORMAL 90.0
+#define KDEPTH 5
+#define KNORMAL 1
 #define MIN_SIZE 15
 #define CANDIDATE_WIDTH 64
 #define CANDIDATE_HEIGHT 128
@@ -97,7 +89,7 @@
 #define BOX_HITS "box_hits"
 #define TAGLOG "Tagging_log"
 #define CLASSIFLOG "Classification_log"
-#define SEGTEST "seg_test"
+
 
 //training params
 #define CAND_OVRLP_TRUE 0.4
@@ -107,13 +99,6 @@
 #define COMPBOXES "complete/boxes"
 #define COMPDESC "complete/descriptors"
 
-
-//Testing Params
-#define SEGIMRAW "frame_00366.jsc68"
-#define SEGIMBED "frame_00006.jsc68"
-#define SEGIMCOR "frame_00006.jsc68"
-#define SEGIMKIT "frame_00006.jsc68"
-#define SEGIMLIV "frame_00006.jsc68"
 
 
 

@@ -60,19 +60,19 @@ void descriptor::calc_gradients(){
 
 	//std::cout << "input image of width: " << im.cols << ", height: " << im.rows << std::endl;
 
-	//using kernel [-1 0 1] for dx and [-1 0 1]' for dy
+	//using kernel 0.5*[-1 0 1] for dx and 0.5*[-1 0 1]' for dy
 	for(int x = 1; x < im.cols - 1; x++){
 		for(int y = 1; y < im.rows - 1; y++){
 			float sumx = 0, sumy = 0, deg = 0, mag = 0;
 			//if pixel is defined set gradient orientation and mag, else leave is at zero
 			if( !cvIsNaN(im.at<float>(cv::Point(x,y))) ){
 				if( !cvIsNaN(im.at<float>(cv::Point(x-1,y))) && !cvIsNaN(im.at<float>(cv::Point(x+1,y))) ){
-					sumx-= im.at<float>(cv::Point(x-1,y));
-					sumx+= im.at<float>(cv::Point(x+1,y));
+					sumx-= 0.5*im.at<float>(cv::Point(x-1,y));
+					sumx+= 0.5*im.at<float>(cv::Point(x+1,y));
 				}
 				if( !cvIsNaN(im.at<float>(cv::Point(x,y-1))) && !cvIsNaN(im.at<float>(cv::Point(x,y+1))) ){
-					sumy-= im.at<float>(cv::Point(x,y-1));
-					sumy+= im.at<float>(cv::Point(x,y+1));
+					sumy-= 0.5*im.at<float>(cv::Point(x,y-1));
+					sumy+= 0.5*im.at<float>(cv::Point(x,y+1));
 				}
 				dx = sumx;
 				dy = sumy;
