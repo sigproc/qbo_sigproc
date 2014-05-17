@@ -45,6 +45,7 @@ class frame {
 	cv::Mat get_jointseg(bool with_cand_boxes);
 	cv::Mat get_depthIm(bool with_cand_boxes);
 	cv::Mat get_candidates_im();
+	cv::Mat get_merged_im();
 
 	private:
 	//require only for internal stuff
@@ -123,28 +124,41 @@ void frame::get_candidates(){
 	//Now scan through and create a subsampled image<char> for segmenting
 	for (int y=0; y < sub_height; y++){
 		for(int x=0; x < sub_width; x++){ //we minus 2 as incoming images are missing their right most column
-			//get s values randomly from each cell into vector
-			std::vector<float> samples;
-			for (int i = 0 ; i <= s; i++){
-				//random x and y offset vals
-				int dx = rand() % alpha;
-				int dy = rand() % alpha;
-				//grab the associated pel from the input image
-				dval = depth_32FC1.at<float>(y*alpha+dy,x*alpha+dx);
-				if(!isnan(dval)){
-					samples.push_back(dval);
+			if(alpha != 1){
+				//get s values randomly from each cell into vector
+				std::vector<float> samples;
+				for (int i = 0 ; i <= s; i++){
+					//random x and y offset vals
+					int dx = rand() % alpha;
+					int dy = rand() % alpha;
+					//grab the associated pel from the input image
+					dval = depth_32FC1.at<float>(y*alpha+dy,x*alpha+dx);
+					if(!isnan(dval)){
+						samples.push_back(dval);
+					}
+				}
+				if(!samples.empty()){
+					//arrange the samples with the median value in the position of s/2
+					std::nth_element(samples.begin(), samples.begin()+samples.size()/2, samples.end());
+					//take the median value to be our sampled point
+					imRef(subsampled,x,y) = samples[samples.size()/2];
+					lastgoodvalue = samples[samples.size()/2];
+				}
+				else {
+					imRef(subsampled,x,y) = lastgoodvalue;
 				}
 			}
-			if(!samples.empty()){
-				//arrange the samples with the median value in the position of s/2
-				std::nth_element(samples.begin(), samples.begin()+samples.size()/2, samples.end());
-				//take the median value to be our sampled point
-				imRef(subsampled,x,y) = samples[samples.size()/2];
-				lastgoodvalue = samples[samples.size()/2];
-			}
 			else {
-				imRef(subsampled,x,y) = lastgoodvalue;
+				dval = depth_32FC1.at<float>(y,x);
+				if(!isnan(dval)){
+					imRef(subsampled,x,y) = dval;
+					lastgoodvalue = dval;
+				}
+				else{
+					imRef(subsampled,x,y) = lastgoodvalue;
+				}
 			}
+			
 		}
 	}
 
@@ -253,6 +267,49 @@ cv::Mat frame::get_candidates_im(){
 		if( !(it->erased) ){
 			rgb colour = random_rgb();		
 			for(std::vector<cv::Point3f>::iterator itp = it->pts.begin(); itp != it->pts.end(); itp++){
+				int x = itp-> x;
+				int y = itp-> y;
+				imRef(candidates_image, x, y).r = colour.r;
+				imRef(candidates_image, x, y).g = colour.g;
+				imRef(candidates_image, x, y).b = colour.b;
+			}
+		}
+	}
+
+	bool with_cand_boxes = false;
+
+	cv::Mat candidates_im = rgbIm_to_Mat(candidates_image, with_cand_boxes);
+	delete candidates_image;
+
+	return candidates_im;
+}
+
+cv::Mat frame::get_merged_im(){
+
+	int in_width, in_height;
+	int sub_width, sub_height;
+	in_width = depth_32FC1.size().width;
+	in_height = depth_32FC1.size().height;
+
+	//subsample variables
+	sub_width = in_width/alpha;
+	sub_height = in_height/alpha;
+
+	image<rgb> * candidates_image = new image<rgb>(sub_width,sub_height);
+	
+	for(int y = 0; y < sub_height; y++) {
+		for (int x = 0; x < sub_width; x++) {
+		imRef(candidates_image, x, y).r = 0;
+		imRef(candidates_image, x, y).g = 0;
+		imRef(candidates_image, x, y).b = 0;
+		}
+	}
+
+	
+	for(std::vector<candidate>::reverse_iterator rit = candidates.rbegin(); rit != candidates.rend(); rit++) {
+		if( (rit->merged) ){
+			rgb colour = random_rgb();		
+			for(std::vector<cv::Point3f>::iterator itp = rit->pts.begin(); itp != rit->pts.end(); itp++){
 				int x = itp-> x;
 				int y = itp-> y;
 				imRef(candidates_image, x, y).r = colour.r;

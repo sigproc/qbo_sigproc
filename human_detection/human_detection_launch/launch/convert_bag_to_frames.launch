@@ -10,7 +10,7 @@
         <arg name="load_driver" value="false"/>
       </include>
 
-	<node pkg="rosbag" type="play" name="rosbag" output="screen" args=" --clock $(arg bag_path) -r 0.1"/>
+	<node pkg="rosbag" type="play" name="rosbag" output="screen" args=" --clock $(arg bag_path) -r 1"/>
 	<node pkg="human_detection" type = "save_metric_frames" name="save_metric_frames">
 		<param name="dir" value="$(arg bag_file)" />
 	</node>

@@ -193,7 +193,7 @@ int main ( int argc, char **argv){
 						//show white candidate
 						cv::rectangle(tmp, c_it->boundingBox, cv::Scalar(255,255,255), 2);
 
-						//compare candidate with each tagged box to determine whether it is positive of not
+						//compare candidate with each tagged box to determine whether it is positive or not
 						for (b_it = tagged_boxes.begin(); b_it != tagged_boxes.end(); b_it++ ){
 							//draw blue box to show tag
 							cv::rectangle(tmp, b_it->box, cv::Scalar(255,0,0), 2);

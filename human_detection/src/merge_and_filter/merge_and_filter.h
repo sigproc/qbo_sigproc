@@ -102,16 +102,23 @@ std::vector<candidate> merge_and_filter(image<float> *im, universe * u, int widt
 			cv::Point centrexz = cv::Point(itc->centre.x, itc->centre.z);
 			///*			
 			for(std::vector<candidate>::iterator itc1 = candidates.begin(); *itc1 > *itc ; itc1++){
-				//std::cout << "Test Candidate Size: " << itc1->size() << std::endl;
-				//merge if the following conditions are met
-				cv::Point testxz = cv::Point(itc1->centre.x, itc1->centre.z);
-				float xz_distance = cv::norm(centrexz.dot(testxz));
-				float y_distance = abs(itc->centre.y-itc1->centre.y);
-				
-				if( (xz_distance < DELTAXZ) || (y_distance < DELTAY) ){
-					 itc->merge(*itc1);
+				if (!itc1->erased){
+					//std::cout << "Test Candidate Size: " << itc1->size() << std::endl;
+					//merge if the following conditions are met
+					cv::Point testxz = cv::Point(itc1->centre.x, itc1->centre.z);
+					float xz_distance = cv::norm(cv::Mat(centrexz),cv::Mat(testxz));
+					float y_distance = abs(itc->centre.y-itc1->centre.y);
+					//std::cout<<"Proximity: delxz =" << xz_distance << " dely =" << y_distance << std::endl;
+					if( (xz_distance < DELTAXZ) && (y_distance < DELTAY) ){
+						 itc1->merge(*itc); //merge itc into itc1
+						 itc->erased = true; //and erase itc
+						//std::cout<<"Merged Candidate " << itc->id << " into " << itc1->id <<std::endl;	
+					}
 				}
 			}//*/
+		}
+		else{
+			//std::cout << "Candidate Already Valid" << std::endl;
 		}
 	}
 	///*

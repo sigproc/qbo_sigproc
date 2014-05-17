@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
 
-#define NORMALWEIGHTSCALINGFACTOR 100//255/pi gives the values to be in a range that is expect for images (81)
+#define NORMALWEIGHTSCALINGFACTOR 1//255/pi gives the values to be in a range that is expect for images (81)
 
 // random color
 rgb random_rgb(){ 
@@ -150,6 +150,9 @@ float anglediff(image<cv::Vec3f> *normals, int x1, int y1, int x2, int y2) {
 	/*if ( !(x1 % 50) && !(y1 % 50) ){
 		std::cout << "angleRAD: " << angleRAD << std::endl;
 	}*/
+
+	//std::cout << angleRAD << ", ";
+
 	//TODO Work out a suitable, and logical scaling factor
 	return angleRAD*NORMALWEIGHTSCALINGFACTOR;
 }
@@ -324,6 +327,9 @@ image<cv::Vec3f>* create_normal_image(image<float>* d, universe *u){
 				abcd = cv::Mat::ones(4,1,CV_32FC1)*-1;
 				
 			}
+			//only normalise validly found normals
+			cv::normalize(abcd.rowRange(0,3), normal, 1, 0, cv::NORM_L2);	
+		
 		}
 		else {
 			//if we cant find the new normal, use the previously used one
@@ -335,6 +341,9 @@ image<cv::Vec3f>* create_normal_image(image<float>* d, universe *u){
 				abcd = Oldabcd;
 			}
 			//std::cout<<"No Normal for: (" <<  x << "," << y << ")" << std::endl;
+			/*normal.at<float>(0) = 0.001;
+			normal.at<float>(1) = 0.001;
+			normal.at<float>(2) = 0.001;*/
 		}
 		//now normalise into normal
 		cv::normalize(abcd.rowRange(0,3), normal, 1, 0, cv::NORM_L2);		

@@ -137,6 +137,8 @@ bool box_tag::is_cand_positive(cv::Rect cand){
 	//														 tlx  trx
 	// Bottom line represents cand(c's) verticle edges	:	|   |
 	//													  clx  crx
+	//TODO theres actually an OpenCv Rect that will do this
+	// rect intersection = a & b
 	if (clx < tlx){
 		if (crx < tlx){			//		| |
 			dx = 0;				//	| |
@@ -198,8 +200,9 @@ bool box_tag::is_cand_positive(cv::Rect cand){
 
 	float overlap_area = dx * dy;
 	float cand_area = cand.width * cand.height;
+	float box_area = box.width * box.height;
 
-	float percent_overlap = overlap_area/cand_area;
+	float percent_overlap = overlap_area/box_area;
 
 	//std::cout << "Overlaps, dx: " << dx << " dy: " << dy << std::endl;
 	//std::cout << "cand.width: " << cand.width << " cand.height: " << cand.height << std::endl;
@@ -207,10 +210,10 @@ bool box_tag::is_cand_positive(cv::Rect cand){
 	//std::cout << "Candidate: left: " << clx << " right: " << crx << std::endl;
 	//std::cout << "Candidate: top: " << cty << " bottom: " << cby << std::endl;
 	//std::cout << "Overlap Area: " << overlap_area << " Cand_area: " << cand_area << std::endl;
-	std::cout << "Percent overlap: " << percent_overlap << std::endl;
+	//std::cout << "Percent overlap: " << percent_overlap << std::endl;
 
 	if( cand_area != 0){
-		if( ( percent_overlap ) > CAND_OVRLP_TRUE){
+		if( ( percent_overlap ) > CAND_OVRLP_TRUE && cand_area < 2*box_area){
 			return true;
 		}
 	}

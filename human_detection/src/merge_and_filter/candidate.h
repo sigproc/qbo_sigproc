@@ -21,6 +21,8 @@ class candidate {
 
 		//TODO
 		bool erased;
+		bool merged;
+		bool human;
 
 		//candidate features for quick heuristic rejection
 		float max_inlier_fraction;
@@ -92,6 +94,8 @@ candidate::candidate(int x,int y, float z, int i){
 	depth_accumulator = z;
 	boundingBox = cv::Rect(xmin,ymin,xmax-xmin,ymax-ymin);
 	erased = false; //TODO
+	merged = false;
+	human = false;
 	id = i;
 	max_inlier_fraction = 0;
 	//std::cout << "New Candidate: (" << x << "," << y << "," << z << ") with id: " << id << std::endl;
@@ -145,8 +149,8 @@ void candidate::calc_real_dims(){
 	real_height = ytop - ybottom;
 	real_width = xright - xleft;
 	/*std::cout << "Xmin: " << xmin << ", xmax: " << xmax << ", ymin: " << ymin << ", ymax: " << ymax <<std::endl;
-	std::cout << "Depth: " << centre.z << " Xleft: " << xleft << ", xright: " << xright << ", ytop: " << ytop << ", ybottom: " << ybottom <<std::endl;
-	std::cout << "Candidate: " << id << ", real_height: " << real_height << ", real_width: " << real_width << std::endl;*/
+	std::cout << "Depth: " << centre.z << " Xleft: " << xleft << ", xright: " << xright << ", ytop: " << ytop << ", ybottom: " << ybottom <<std::endl;*/
+	//std::cout << "Candidate: " << id << ", real_height: " << real_height << ", real_width: " << real_width << std::endl;
 }
 	
 void candidate::create_candidate_image(cv::Mat &depthim){
@@ -241,8 +245,8 @@ void candidate::create_candidate_image(cv::Mat &depthim){
 
 bool candidate::merge(candidate c){
 	//note that c should be of a larger size than this
-	if( c.size() < size() ){
-		std::cout << "MERGE FAILED: CAN ONLY MERGE WITH A LARGER CANDIDATE" << std::endl;
+	if( c.size() > size() ){
+		std::cout << "MERGE FAILED: CAN ONLY MERGE WITH A SMALLER CANDIDATE" << std::endl;
 		return false;
 	}
 	//find out new bounding box params	
@@ -253,10 +257,20 @@ bool candidate::merge(candidate c){
 
 	//use these to recalculate the real dimensions
 	calc_real_dims();
+	calc_centre();
 
 	//add the points
-	pts.insert(pts.end(), c.pts.begin(), c.pts.end());
-	erased = true;
+	//pts.insert(pts.end(), c.pts.begin(), c.pts.end());
+	//std::cout << "Add Points";
+	int count = 0;
+	for (std::vector<cv::Point3f>::iterator it = c.pts.begin() ; it != c.pts.end(); ++it){
+		pts.push_back(*it);
+		//std::cout << *it << ", ";
+		count++;
+		depth_accumulator+=it->z;
+	}
+	//std::cout << "Pixels Added: " << count << std::endl;
+	merged = true;
 	return true;
 
 }
@@ -368,13 +382,17 @@ void candidate::calc_centre(){
 
 	//use true depth to convert real space location of candidate
 	centre.x = calc_real_distance(depth, midx, PEL_WIDTH/ALPHA, F_H*3.141592653589793/180);
-	centre.y = calc_real_distance(depth, midy, PEL_HEIGHT/ALPHA, F_V*3.141592653589793/180);
+	centre.y = calc_real_distance(depth, PEL_HEIGHT/ALPHA - midy, PEL_HEIGHT/ALPHA, F_V*3.141592653589793/180);
 	centre.z = depth;
 
 	/*//for now let us just use pel values
 	centre[0] = pelx;
 	centre[1] = pely;
 	centre[2] = depth;*/
+
+	//std::cout<<"Candidate: " << id << ", MU = (" << centre.z << "," << centre.y << "," << centre.z << ")" << std::endl;
+	//std::cout << "xmin: " << xmin << ", xmax: " << xmax << ", ymin: " << ymin << ", ymax: " << ymax <<std::endl;
+	
 
 }
 

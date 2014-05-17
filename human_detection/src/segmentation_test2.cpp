@@ -116,7 +116,7 @@ int main ( int argc, char **argv){
 	std::string descdir = bagdir + DESC;
 
 	std::stringstream log_name;
-	log_name << root << SEGTEST << "." << bag.substr(0,bag.length()-1)<<"."<<ALPHA<<"."<<ESS<<"."<<KDEPTH<<"."<<KNORMAL<<"."<<MIN_SIZE;
+	log_name << root << SEGTEST << "-" << bag.substr(0,bag.length()-1)<<"-"<<ALPHA<<"-"<<ESS<<"-"<<KDEPTH<<"-"<<KNORMAL<<"-"<<MIN_SIZE;
 	std::string results_log = log_name.str()+".csv";
 	//results_log = results_log + "." + bag.substr(0,bag.length()-1) + ".csv";
 
@@ -128,14 +128,20 @@ int main ( int argc, char **argv){
 	std::cout << "Frames to be processed: " << frames.size() << std::endl;
 
 	std::list<std::string>::iterator im_file;
+	std::list<std::string>::iterator first_it;
+	//cvNamedWindow("window");
 	//frame f;
 	int num_candidates = 0;
-	for(im_file = frames.begin(); im_file != frames.end(); im_file++){
+	cv::Mat depthseg,normalseg,jointseg,candim,mergeim;
+	
+	first_it = find(frames.begin(),frames.end(), "frame_00366.jsc68");
+	im_file = first_it;
+	//for(im_file = first_it; im_file != frames.end(); im_file++){
+	//for(im_file = frames.begin(); im_file != frames.end(); im_file++){
 	//for(im_file = frames.end(); im_file != frames.begin(); im_file--){
 		frame f;
 		std::string path = DATADIR + bag + FRAMES + *im_file;
 		int start_lines = complete_lines;
-	
 
 		//std::list<box_tag>::iterator b_it;
 		std::vector<candidate>::iterator c_it;
@@ -149,9 +155,17 @@ int main ( int argc, char **argv){
 
 			//get candidates to initiate running processing
 			f.get_candidates();
-			cv::Mat tmp = f.get_depthseg(false).clone();
-			//cv::imshow("window", tmp);
-			//cv::waitKey(10);
+			depthseg = f.get_depthseg(false).clone();
+			normalseg = f.get_normalseg(false).clone();
+			jointseg = f.get_jointseg(false).clone();
+			mergeim = f.get_merged_im();
+			candim = f.get_candidates_im();
+			
+			cv::imshow("joined segmentations", jointseg);
+			cv::imshow("normal segmentations", normalseg);
+			//cv::imshow("Valid Regions",candim);
+			//cv::imshow("Regions resulting from mergers",mergeim);
+			cv::waitKey(10000);
 
 			clock_t postPrep = f.postPrep;
 			clock_t postSeg = f.postSeg;
@@ -166,38 +180,48 @@ int main ( int argc, char **argv){
 
 			//This is only for capturing the same frame from each set for different params
 			
-			if(bag == "raws/"){
+			/*if(bag == "raws/"){
 				if(*im_file == SEGIMRAW){
-					cv::imwrite((log_name.str()+".png").c_str(), tmp);
+					cv::imwrite((log_name.str()+"-depth"+".png").c_str(), depthseg);
+					cv::imwrite((log_name.str()+"-normal"+".png").c_str(), normalseg);
+					cv::imwrite((log_name.str()+"-joint"+".png").c_str(), jointseg);
 				}
 			}
 			if(bag == "bedroom1_f/"){
 					if(*im_file == SEGIMBED){
-						cv::imwrite((log_name.str()+".png").c_str(), tmp);
+					cv::imwrite((log_name.str()+"-depth"+".png").c_str(), depthseg);
+					cv::imwrite((log_name.str()+"-normal"+".png").c_str(), normalseg);
+					cv::imwrite((log_name.str()+"-joint"+".png").c_str(), jointseg);
 					}
 			}
 			if(bag == "corridor1_f/"){
 					if(*im_file == SEGIMCOR){
-						cv::imwrite((log_name.str()+".png").c_str(), tmp);
+					cv::imwrite((log_name.str()+"-depth"+".png").c_str(), depthseg);
+					cv::imwrite((log_name.str()+"-normal"+".png").c_str(), normalseg);
+					cv::imwrite((log_name.str()+"-joint"+".png").c_str(), jointseg);
 					}
 			}
 			if(bag == "kitchen1_f/"){
 					if(*im_file == SEGIMKIT){
-						cv::imwrite((log_name.str()+".png").c_str(), tmp);
+					cv::imwrite((log_name.str()+"-depth"+".png").c_str(), depthseg);
+					cv::imwrite((log_name.str()+"-normal"+".png").c_str(), normalseg);
+					cv::imwrite((log_name.str()+"-joint"+".png").c_str(), jointseg);
 					}
 			}
 			if(bag == "livingroom1_f/"){
 					if(*im_file == SEGIMLIV){
-						cv::imwrite((log_name.str()+".png").c_str(), tmp);
+					cv::imwrite((log_name.str()+"-depth"+".png").c_str(), depthseg);
+					cv::imwrite((log_name.str()+"-normal"+".png").c_str(), normalseg);
+					cv::imwrite((log_name.str()+"-joint"+".png").c_str(), jointseg);
 					}
-			}
+			}*/
 		}
-
+		
 		f.erase_ims();
 		std::cout<< *im_file << std::endl;
 		//if(!(count % 25))std::cout<<std::endl;
-	}
-
+	//}
+	cv::destroyAllWindows();
 	f_resultslog.close();
 
 	std::cout << "FINISHED" << std::endl;
