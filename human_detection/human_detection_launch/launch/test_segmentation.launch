@@ -1,0 +1,8 @@
+<launch>
+ 
+ 	 <arg name="user" default="sam" />
+	 <arg name="bag_file" default="bedroom1_f.bag" />
+
+	<node pkg="human_detection" type = "segmentation_test2" name="segmentation_test2"/>
+
+</launch>
