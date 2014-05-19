@@ -31,6 +31,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 
 #define NORMALWEIGHTSCALINGFACTOR 1//255/pi gives the values to be in a range that is expect for images (81)
 
+//float angletotal = 0;
+//int countangles = 0;
+
 // random color
 rgb random_rgb(){ 
   rgb c;
@@ -146,15 +149,26 @@ float anglediff(image<cv::Vec3f> *normals, int x1, int y1, int x2, int y2) {
 	float dotc = (imRef(normals, x1, y1)[2])*(imRef(normals, x2, y2)[2]);
 	float dotprod = dota+dotb+dotc;
 
+	
 	angleRAD = acos(dotprod); // acos returns values between 0 and pi (3.14)
 	/*if ( !(x1 % 50) && !(y1 % 50) ){
 		std::cout << "angleRAD: " << angleRAD << std::endl;
 	}*/
 
 	//std::cout << angleRAD << ", ";
+	/*if(!isnan(angleRAD)){
+		angletotal += angleRAD;
+		countangles++;
+		std::cout<< "Total: " <<angletotal<< ", Count:" << countangles << std::endl;
+	}*/
 
 	//TODO Work out a suitable, and logical scaling factor
-	return angleRAD*NORMALWEIGHTSCALINGFACTOR;
+	if(!isnan(angleRAD)){
+		return angleRAD*NORMALWEIGHTSCALINGFACTOR;
+	}
+	else{
+		return 0.0;
+	}
 }
 
 /********************************************************************
@@ -500,8 +514,10 @@ universe *segment_image1C(image<float> * im, float sigma, float Kdepth, float Kn
   universe *u_normal = segment_graph(width*height, num_normal, g_normal, normalThreshK);
   
   // post process small components of normal graph
-  post_process_components(g_normal, u_normal, num_normal, min_size);
-
+  
+	//TODO TODO TODO
+  //post_process_components(g_normal, u_normal, num_normal, min_size);
+	//TODO TODO TODO UNCOMMENT ^^^: Actually I think its better without!
   //finally, use both segmentations to merge segmentations into regions which are in the same components in
   // both u_normal and u_depth
   universe *u_final = merge_segmentations(u_depth, u_normal, width, height);

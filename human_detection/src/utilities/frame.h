@@ -24,7 +24,8 @@ class frame {
 	std::string path;
 	cv::Mat depth_32FC1;
 	std::vector<candidate> candidates;
-	
+	int any_detections;
+
 	//for timing
 	clock_t start, postPrep, postSeg, postMerge, postPost;
 
@@ -46,6 +47,9 @@ class frame {
 	cv::Mat get_depthIm(bool with_cand_boxes);
 	cv::Mat get_candidates_im();
 	cv::Mat get_merged_im();
+
+	//classification
+	void classify_candidates();	
 
 	private:
 	//require only for internal stuff
@@ -76,6 +80,8 @@ frame::frame(std::string path, bool &success){
 	Knormal = KNORMAL;
 	min_size = MIN_SIZE;
 	alpha = ALPHA, s = ESS;
+
+	any_detections = 0;
 
 	//read in and verify that data is valid
 	readFileToMat(depth_32FC1, path);
@@ -176,6 +182,89 @@ void frame::get_candidates(){
 
 	postMerge = clock();
 }
+
+void frame::classify_candidates(){
+
+	if(candidates.size() != 0){	
+
+		//Open File to write descriptors to. Contents of this file are re-written for each frame!
+		std::ofstream file;
+		std::string datadir = DATADIR;
+		datadir.append("test.txt");
+		file.open (datadir.c_str());
+
+		int num_candidates = 0;
+
+		//get a list of valid candidate id's
+		std::vector<int> ids;
+		for(std::vector<candidate>::iterator it = candidates.begin(); it != candidates.end(); it++) {
+			if( !(it->erased) ){
+				ids.push_back(it->id); //keep track of valid candidates
+				descriptor candidate_descriptor = descriptor(it->im); //create descriptor and compute...
+				candidate_descriptor.compute_descriptor();
+				//print candidates to file
+				file << candidate_descriptor.HODstring();
+				num_candidates++;
+			}
+		}
+
+		if(ids.size() != num_candidates){
+			std::cout << "BIG ERROR IN FAME::CLASSIFY_CANDIDATES()-1" << std::endl;
+		}
+
+		//close file
+		file.close();
+
+		//Now run classifier on file
+		std::string outputfile = DATADIR;
+		std::string model = MODEL;
+		outputfile.append("mock/predictions");
+		std::string fncall = SVMDIR;
+		fncall.append("svm_classify ");
+		fncall.append(datadir.append(" "));
+		fncall.append(model.append(" "));
+		fncall.append(outputfile);
+		//std::cout << fncall.c_str() << std::endl;
+		//std::cout << "Running classifier..." << std::endl;
+		int returncode = system(fncall.c_str());
+
+		//Now interpret classifier results and do something...
+		std::ifstream c_descriptors;
+		c_descriptors.open(outputfile.c_str());
+
+		//This is a bit hacky but should work! As each line loop we are going through the candidates in order
+		for(std::vector<int>::iterator id_it = ids.begin(); id_it != ids.end(); id_it++){
+
+			char classchar[100];
+			c_descriptors.getline(classchar,100);
+			//std::cout << "Read Line: " << classchar;
+			float classval = atof(classchar);
+			//std::cout << " has value: " << classval << std::endl;
+		
+			if (classval > 0){
+				//std::cout << "Candidate: " << *id_it << " is a human!" << std::endl;
+				//find candidate id in candidates
+				std::vector<candidate>::iterator it = candidates.begin();
+				while ( (it != candidates.end() && it->id != *id_it)){
+					it++;
+				}
+				if (it == candidates.end()){
+					std::cout << "BIG ERROR IN FAME::CLASSIFY_CANDIDATES()-2" << std::endl;
+				}
+				it->human = true;
+				any_detections++;
+			}
+		}
+
+		c_descriptors.close();
+	}
+	else{
+		std::cout << "Frame has no Candidates." << std::endl;
+	}
+	std::cout << "Classification Finished" << std::endl <<std::endl;
+
+}
+
 
 
 int frame::valid_candidates(){

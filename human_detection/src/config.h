@@ -4,30 +4,30 @@
 //#define QBO
 
 //Select which images to show from running
-/*#define SHOWDEPTHIM true
+#define SHOWDEPTHIM true
 #define SHOWDEPTHSEG false
 #define SHOWNORMALSEG false
 #define SHOWNORMALIM false
 #define SHOWJOINTSEG true
 #define SHOWCANDIDATES true
-#define SHOWBOXES true*/
+#define SHOWBOXES true//*/
 
-#define SHOWDEPTHIM true
+/*#define SHOWDEPTHIM true
 #define SHOWDEPTHSEG true
 #define SHOWNORMALSEG true
 #define SHOWNORMALIM true
 #define SHOWJOINTSEG true
 #define SHOWCANDIDATES false
-#define SHOWBOXES false
+#define SHOWBOXES false //*/
 
 
 //define system parameters
 #define SIGMA 0.5
 #define ALPHA 8
 #define ESS 13
-#define KDEPTH 1.0
-#define KNORMAL 90.0
-#define MIN_SIZE 15
+#define KDEPTH 6
+#define KNORMAL 1.6
+#define MIN_SIZE 30
 #define CANDIDATE_WIDTH 64
 #define CANDIDATE_HEIGHT 128
 #define DILATING_SCALE 5
@@ -41,13 +41,13 @@
 #define MIN_SIZE 50*/
 
 //merge and filter params
-#define MIN_INLIER_FRACTION 0.1
+#define MIN_INLIER_FRACTION 0.5 // for rejecting non-planar regions
 #define VALID_VALUE 0.000001
-#define CANDIDATE_MIN_WIDTH 0.2 //meters
-#define CANDIDATE_MAX_WIDTH 1.2 //meters
+#define CANDIDATE_MIN_WIDTH 0.3 //meters
+#define CANDIDATE_MAX_WIDTH 1.5 //meters
 #define CANDIDATE_MIN_HEIGHT 1.0 //meters
-#define CANDIDATE_MAX_HEIGHT 2.4 //meters
-#define CANDIDATE_MIN_DENSITY 0.3 
+#define CANDIDATE_MAX_HEIGHT 1.7 //meters
+#define CANDIDATE_MIN_DENSITY 0.2
 #define DELTAXZ 0.5
 #define DELTAY 1.0
 
@@ -79,7 +79,7 @@
 //#else
 
 	#define DATADIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/"	
-	#define MODEL "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/model/model0"
+	#define MODEL "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/model/raws-12-15-17-5-2014"
 	#define SVMDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/SVMLight/"
 	#define FRAMESDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/bag_frames/"
 	#define ANNOTDIR "/home/sam/cued-masters/src/qbo_sigproc/human_detection/data/annotations/"
@@ -98,6 +98,7 @@
 #define TAGLOG "Tagging_log"
 #define CLASSIFLOG "Classification_log"
 #define SEGTEST "seg_test"
+#define TIMETEST "timings"
 
 //training params
 #define CAND_OVRLP_TRUE 0.4

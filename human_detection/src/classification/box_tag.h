@@ -20,6 +20,7 @@ class box_tag{
 	public:
 
 	cv::Rect box;
+	bool detected;
 
 	bool verify_frame(std::string str);
 	bool verify_bag(std::string str);
@@ -66,6 +67,7 @@ box_tag::box_tag(std::string tag_line){ //for use in hd_train
 	frame = frame_buf;
 	box = cv::Rect(tlx, tly, width, height);
 	count = 0;
+	detected = false;
 	//std::cout << "Read in: Bag: " << bag << " frame: " << frame << " tlx: " << tlx << " tly: " << tly << " width: " << width << " height: " << height << " vis: " << vis << std::endl;
 }
 
@@ -75,6 +77,7 @@ box_tag::box_tag(int tlx_, int tly_, int width_, int height_, std::string bag_, 
 	frame =  frame_;
 	vis = vis_;
 	count = 0;
+	detected = false;
 }
 
 box_tag::box_tag(){
@@ -119,6 +122,57 @@ bool box_tag::verify_bag(std::string str){
 }
 
 bool box_tag::is_cand_positive(cv::Rect cand){
+
+	//tagged box is variable 'box'
+	//candidate box is variable 'cand'
+
+	//get rectangles of intersection and minimum area containing both:
+	cv::Rect innerbox = box & cand;
+	cv::Rect outerbox = box | cand;
+
+	/*std::cout << "Innerbox.height: " << innerbox.height << std::endl;
+	std::cout << "outerbox.height: " << outerbox.height << std::endl;
+	std::cout << "Innerbox.width: " << innerbox.width << std::endl;
+	std::cout << "outerbox.width: " << outerbox.width << std::endl;
+	std::cout << "box.width: " << box.width << std::endl;*/
+
+
+	//if the height of the intersection is less than 40% of the outerbox, reject
+	if (innerbox.height < 0.4 * outerbox.height){
+		//std::cout << "Candidate does not overlap by at least 40percent vertically" << std::endl;
+		return false;
+	}
+	//if the width of the intersection is less than 70% of the outerbox, reject
+	if(innerbox.width < 0.7*outerbox.width){
+		//std::cout << "Candidate does not overlap by at least 70percent horizontally" << std::endl;
+		return false;
+	}
+	//if the candidate box is not occupying at least 30% of the width of the annotated box
+	if(innerbox.width < 0.3*box.width){
+		//std::cout << "Candidate does not occupy at least 30percent of tagged box width" << std::endl;
+		return false;
+	}
+
+
+	//if we havent been rejected yet it must be true!	
+	return true;
+
+}
+
+void box_tag::inc_count(){
+	count++;
+}
+
+std::string box_tag::tagged_string(){
+	char buffer[75];
+	//std::string line = sprintf(buffer, "%s %s %d %d %d %d %d %d", bag.c_str(), frame.c_str(), box.x, box.y, box.width, box.height, vis, count);
+	std::string line = "meh";
+	return line;
+}
+
+#endif
+
+/*bool box_tag::is_cand_positive(cv::Rect cand){
 
 	int dx = 0, dy = 0;
 	int clx = cand.x;
@@ -198,7 +252,9 @@ bool box_tag::is_cand_positive(cv::Rect cand){
 	}							//	_
 								//	_
 
-	float overlap_area = dx * dy;
+
+//	float overlap_area = dx * dy;
+	cv::
 	float cand_area = cand.width * cand.height;
 	float box_area = box.width * box.height;
 
@@ -220,17 +276,5 @@ bool box_tag::is_cand_positive(cv::Rect cand){
 
 	return false;
 
-}
+}*/
 
-void box_tag::inc_count(){
-	count++;
-}
-
-std::string box_tag::tagged_string(){
-	char buffer[75];
-	//std::string line = sprintf(buffer, "%s %s %d %d %d %d %d %d", bag.c_str(), frame.c_str(), box.x, box.y, box.width, box.height, vis, count);
-	std::string line = "meh";
-	return line;
-}
-
-#endif

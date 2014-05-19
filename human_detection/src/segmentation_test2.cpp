@@ -163,8 +163,9 @@ int main ( int argc, char **argv){
 			
 			cv::imshow("joined segmentations", jointseg);
 			cv::imshow("normal segmentations", normalseg);
-			//cv::imshow("Valid Regions",candim);
-			//cv::imshow("Regions resulting from mergers",mergeim);
+			cv::imshow("depth segmentations", depthseg);
+			cv::imshow("Valid Regions",candim);
+			cv::imshow("Regions resulting from mergers",mergeim);
 			cv::waitKey(10000);
 
 			clock_t postPrep = f.postPrep;
