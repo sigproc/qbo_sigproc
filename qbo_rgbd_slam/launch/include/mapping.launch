@@ -10,7 +10,7 @@
     <!--How many nearest neighbors are requested per keypoint from the kd-tree of all keypoints-->
     <arg name="k_nearest_neighbors" default="15"/>
     <!--How many inliers are required to pass the RANSAC test-->
-    <arg name="min_ransac_inliers" default="70"/><!-- Used to be 30 -->
+    <arg name="min_ransac_inliers" default="30"/><!-- Used to be 30 -->
     <!--Maximum distance (in SURF descriptor space) between two features to be considered a correspondence candidate-->
     <arg name="max_corresp_dist_desc" default="1.0"/>
     <!--Maximum distance (in Euclidean metric space) between two features to be considered a correspondence candidate.-->
@@ -34,11 +34,11 @@
     <param name="map_save_directory" value="$(arg map_directory)" />
     <param name="map_load_directory" value="$(arg map_directory)" />
     <param name="localization_only" value="$(arg localization_only)"/>
-    <param name="verbose" value="true"/>
+    <param name="verbose" value="false"/>
     <param name="motion_constraint" value="true"/>
     <param name="fixed_frame" value="/map"/>
     <param name="online_graph_opt" value="true"/>
-    <param name="graph/min_temporal_distance_for_RANSAC" value="10"/>
+    <param name="graph/min_temporal_distance_for_RANSAC" value="5"/>
     <param name="graph/n_candidates" value="3"/>
     <param name="kf_dist_eps"  value="0.25"/> <!-- 25 cm (used to be 25) -->
     <param name="kf_angle_eps" value="0.35"/> <!-- 20 deg (used to be  20-->
