@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<robot name="qbo">
+     
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://qbo_laser_slam/urdf/qbo_both.dae"/>
+      </geometry>
+    </visual>
+  </link>
+
+</robot>
+

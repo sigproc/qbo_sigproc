@@ -1,0 +1,24 @@
+<launch>
+
+  <!-- Run the map server -->
+  <!--<node name="map_server" pkg="map_server" type="map_server" args="$(find qbo_depth_slam)/maps/map1.yaml"/>-->
+
+  <!--- Run AMCL -->
+  <group>
+    <node name="amcl" pkg="amcl" type="amcl" output="screen">
+      <param name="scan" value="/scan"/>
+      <param name="laser_max_range" value="10.0"/>
+      <param name="odom_frame_id" value="/odom"/>
+      <param name="use_map_topic" value="true"/>
+    </node> 
+  </group>
+
+
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <rosparam file="$(find qbo_depth_slam)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find qbo_depth_slam)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find qbo_depth_slam)/config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find qbo_depth_slam)/config/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find qbo_depth_slam)/config/base_local_planner_params.yaml" command="load" />
+  </node>
+</launch>
