@@ -1,0 +1,100 @@
+<launch>
+  <!--
+    Define an argument specifying the address of the Q.bo. This can be
+    overridden on the roslaunch command line via qbo_address:=somename. 
+    -->
+  <arg name="qbo_address" default="sigproc-robot1" />
+  <arg name="qbo_user" default="qbo" />
+  <arg name="mono_camera_side" default="left" />
+  <arg name="mono_camera_device" default="/dev/video0" />
+  
+  <group>
+      <node pkg="rviz" type="rviz" name="rviz" args="-d $(find qbo_depth_slam)/rviz_cfg/hector.rviz"/>
+  </group>
+
+  <group>
+    <!--
+      Putting the machine *within* the group and setting it as a default means
+      nodes within this group will be launched on the Q.bo. Notice that we 
+      hack the ROS_HOSTNAME variable in the command line for the env-loader. 
+      This is more than a little mucky.
+      -->
+    <machine name="qbo" address="$(arg qbo_address)" user="$(arg qbo_user)" default="true"
+      env-loader="ROS_HOSTNAME=$(arg qbo_address) ~/cued-masters/devel/env.sh" />
+
+    <!-- Bring up qbo with frames for cameras and sensors available. -->
+    <include file="$(find qbo_sigproc_launch)/launch/include/bringup_with_sensors.launch" />
+
+
+    <!-- Add in head joint odometry -->
+    <node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />
+
+    <node name="notilt" pkg="tf" type="static_transform_publisher" args="0.4 0 0 0 0 0 base_link camera_depth_frame_notilt 100" />
+
+    <group>
+      <include file="$(find qbo_sigproc_launch)/launch/include/openni.launch">
+        <arg name="machine" value="qbo" />
+      </include>
+    </group>
+
+    <group>
+      <node name="depthimagetolaserscan" pkg="depthimage_to_laserscan" type="depthimage_to_laserscan">
+        <remap from="image" to="/camera/depth/image_raw"/>
+        <param name="output_frame_id" type="str" value="camera_depth_frame_notilt"/>
+      </node>
+    </group>
+
+    <group>
+       <include file="$(find qbo_joypad)/launch/joypad.launch">
+       </include>
+    </group>
+
+    <group>
+      <include file="$(find qbo_sigproc_launch)/launch/include/mono_camera.launch">
+         <arg name="mono_camera_side" value="$(arg mono_camera_side)" />
+         <arg name="mono_camera_device" default="$(arg mono_camera_device)" />
+      </include>
+    </group>
+
+    <group>
+     <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
+        <!--remap from="scan" to="base_scan"/-->
+        <!--param name="odom_frame" value="odom"/-->
+        <param name="map_update_interval" value="2.0"/>
+        <param name="maxUrange" value="6.0"/>
+        <param name="sigma" value="0.05"/>
+        <param name="kernelSize" value="1"/>
+        <param name="lstep" value="0.05"/>
+        <param name="astep" value="0.05"/>
+        <param name="iterations" value="5"/>
+        <param name="lsigma" value="0.075"/>
+        <param name="ogain" value="3.0"/>
+        <param name="lskip" value="0"/>
+        <param name="srr" value="0.01"/>
+        <param name="srt" value="0.02"/>
+        <param name="str" value="0.01"/>
+        <param name="stt" value="0.02"/>
+        <param name="linearUpdate" value="0.25"/>     <!-- param name="linearUpdate" value="0.5"/-->
+        <param name="angularUpdate" value="0.262"/>   <!--param name="angularUpdate" value="0.436"/-->
+        <param name="temporalUpdate" value="-1.0"/>
+        <param name="resampleThreshold" value="0.5"/>
+        <param name="particles" value="300"/>
+        <param name="xmin" value="-50.0"/>
+        <param name="ymin" value="-50.0"/>
+        <param name="xmax" value="50.0"/>
+        <param name="ymax" value="50.0"/>
+        <param name="delta" value="0.05"/>
+        <param name="llsamplerange" value="0.01"/>
+        <param name="llsamplestep" value="0.01"/>
+        <param name="lasamplerange" value="0.005"/>
+        <param name="lasamplestep" value="0.005"/>
+      </node>
+    </group>
+
+
+    <include file="$(find qbo_depth_slam)/launch/nav.launch" />
+   
+    
+    
+  </group>
+</launch>

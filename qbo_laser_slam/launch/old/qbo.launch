@@ -1,0 +1,66 @@
+<launch>
+  <!--
+    Define an argument specifying the address of the Q.bo. This can be
+    overridden on the roslaunch command line via qbo_address:=somename. 
+    -->
+  <arg name="qbo_address" default="sigproc-robot1" />
+  <arg name="qbo_user" default="qbo" />
+
+
+  <arg name="rviz" default="false" />
+
+
+  
+
+  <group>
+      <node pkg="rviz" type="rviz" name="rviz" args="-d $(find qbo_depth_slam)/rviz_cfg/hector.rviz"/>
+  </group>
+
+
+  <group>
+     <include file="$(find qbo_depth_slam)/launch/hector_slam.launch">
+     </include>
+  </group>
+
+
+  <group>
+    <!--
+      Putting the machine *within* the group and setting it as a default means
+      nodes within this group will be launched on the Q.bo. Notice that we 
+      hack the ROS_HOSTNAME variable in the command line for the env-loader. 
+      This is more than a little mucky.
+      -->
+    <machine name="qbo" address="$(arg qbo_address)" user="$(arg qbo_user)" default="true"
+      env-loader="ROS_HOSTNAME=$(arg qbo_address) ~/cued-masters/devel/env.sh" />
+
+    <!-- Bring up qbo with frames for cameras and sensors available. -->
+    <include file="$(find qbo_sigproc_launch)/launch/include/bringup_with_sensors.launch" />
+
+    <!-- Add static transform from map to odom -->
+    <node name="maptoodom" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 map odom 100" />
+
+    <!-- Add in head joint odometry -->
+    <node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />
+    <node name="notilt" pkg="tf" type="static_transform_publisher" args="0.4 0 0 0 0 0 base_link camera_depth_frame_notilt 100" />
+
+    <group>
+      <include file="$(find qbo_sigproc_launch)/launch/include/openni.launch">
+        <arg name="machine" value="qbo" />
+      </include>
+    </group>
+
+    <group>
+      <node name="depthimagetolaserscan" pkg="depthimage_to_laserscan" type="depthimage_to_laserscan">
+        <remap from="image" to="/camera/depth/image_raw"/>
+        <param name="output_frame_id" type="str" value="camera_depth_frame_notilt"/>
+      </node>
+    </group>
+
+    <group>
+       <include file="$(find qbo_joypad)/launch/joypad.launch"/>
+    </group>
+
+
+    
+  </group>
+</launch>

@@ -1,0 +1,87 @@
+<launch>
+
+  <arg name="mono_camera_side" default="left" />
+  <arg name="mono_camera_device" default="/dev/video0" />
+ 
+  <include file="$(find qbo_sigproc_launch)/launch/include/bringup_with_sensors.launch" />
+  <node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />
+  <node name="notilt" pkg="tf" type="static_transform_publisher" args="0 0 0.4 0 0 0 base_link camera_depth_frame_notilt 100" />
+
+  <arg name="kinect_camera_name" default="camera" />
+  <param name="/$(arg kinect_camera_name)/driver/data_skip" value="5" /> 
+  <param name="/$(arg kinect_camera_name)/driver/image_mode" value="9" /> 
+  <param name="/$(arg kinect_camera_name)/driver/depth_mode" value="9" /> 
+  
+  <include file="$(find qbo_sigproc_launch)/launch/include/openni.launch"/>
+
+   <!-- <group>
+     <node pkg="gmapping" type="slam_gmapping" name="gmapping">
+        <param name="map_update_interval" value="2.0"/>
+        <param name="maxUrange" value="6.0"/>
+        <param name="sigma" value="0.05"/>
+        <param name="kernelSize" value="1"/>
+        <param name="lstep" value="0.05"/>
+        <param name="astep" value="0.05"/>
+        <param name="iterations" value="5"/>
+        <param name="lsigma" value="0.075"/>
+        <param name="ogain" value="3.0"/>
+        <param name="lskip" value="0"/>
+        <param name="srr" value="0.01"/>
+        <param name="srt" value="0.02"/>
+        <param name="str" value="0.01"/>
+        <param name="stt" value="0.02"/>
+        <param name="linearUpdate" value="0.5"/>
+        <param name="angularUpdate" value="0.436"/>
+        <param name="temporalUpdate" value="-1.0"/>
+        <param name="resampleThreshold" value="0.5"/>
+        <param name="particles" value="50"/>
+        <param name="xmin" value="-50.0"/>
+        <param name="ymin" value="-50.0"/>
+        <param name="xmax" value="50.0"/>
+        <param name="ymax" value="50.0"/>
+        <param name="delta" value="0.05"/>
+        <param name="llsamplerange" value="0.01"/>
+        <param name="llsamplestep" value="0.01"/>
+        <param name="lasamplerange" value="0.005"/>
+        <param name="lasamplestep" value="0.005"/>
+      </node>
+    </group>
+   -->
+
+
+  <group>
+     <node name="depthimagetolaserscan" pkg="depthimage_to_laserscan" type="depthimage_to_laserscan">
+        <remap from="image" to="/camera/depth/image_raw"/>
+        <param name="output_frame_id" type="str" value="camera_depth_frame_notilt"/>
+        <!-- <param name="range_max" type="double" value="8.0"/> -->
+       <!-- <param name="scan_time" type="double" value="0.1"/> -->
+        <param name="scan_height" type="int" value="1"/> 
+     </node>
+  </group>
+
+    <include file="$(find qbo_joypad)/launch/joypad.launch"/>
+
+    <group>
+      <include file="$(find qbo_sigproc_launch)/launch/include/mono_camera.launch">
+         <arg name="mono_camera_side" value="$(arg mono_camera_side)" />
+         <arg name="mono_camera_device" default="$(arg mono_camera_device)" />
+      </include>
+    </group>
+
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find qbo_depth_slam)/maps/map6.yaml" />
+
+    <group>
+       <node name="amcl" pkg="amcl" type="amcl"> 
+       </node>
+    </group>
+
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+       <rosparam file="$(find qbo_depth_slam)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+       <rosparam file="$(find qbo_depth_slam)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+       <rosparam file="$(find qbo_depth_slam)/config/local_costmap_params.yaml" command="load" />
+       <rosparam file="$(find qbo_depth_slam)/config/global_costmap_params.yaml" command="load" />
+       <rosparam file="$(find qbo_depth_slam)/config/base_local_planner_params.yaml" command="load" />
+    </node>
+
+</launch>
+
