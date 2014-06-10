@@ -13,4 +13,7 @@ To run the system and perform SLAM:
 $ roslaunch qbo_laser_slam mapping.launch
 ```  
 
-
+Or to perform Navigation:
+```console
+$ roslaunch qbo_laser_slam navigation.launch
+```  
