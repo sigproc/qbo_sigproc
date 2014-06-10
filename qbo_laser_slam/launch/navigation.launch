@@ -36,7 +36,7 @@
 
     <include file="$(find qbo_joypad)/launch/joypad.launch"/>
 
-    <node name="map_server" pkg="map_server" type="map_server" args="$(find qbo_laser_slam)/maps/map13.yaml" />
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find qbo_laser_slam)/maps/map.yaml" />
 
     <group>
        <node name="amcl" pkg="amcl" type="amcl"> 
