@@ -17,3 +17,10 @@ Or to perform Navigation:
 ```console
 $ roslaunch qbo_laser_slam navigation.launch
 ```  
+
+Both of which should be run on the robot (e.g. ssh into the robot and then run the previous commands).
+
+The process can then be visualised in rviz on an external system:
+```console
+$ rosrun rviz rviz
+```  
