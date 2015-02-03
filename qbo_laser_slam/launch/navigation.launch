@@ -39,8 +39,8 @@
     <node name="map_server" pkg="map_server" type="map_server" args="$(find qbo_laser_slam)/maps/map.yaml" />
 
     <group>
-       <node name="amcl" pkg="amcl" type="amcl"> 
-         <param name="odom_frame_id" value="odom" />
+       <node name="amcl" pkg="amcl" type="amcl">
+         <rosparam file="$(find qbo_laser_slam)/config/amcl_params.yaml" command="load" />
        </node>
     </group>
 
@@ -50,6 +50,7 @@
        <rosparam file="$(find qbo_laser_slam)/config/local_costmap_params.yaml" command="load" />
        <rosparam file="$(find qbo_laser_slam)/config/global_costmap_params.yaml" command="load" />
        <rosparam file="$(find qbo_laser_slam)/config/base_local_planner_params.yaml" command="load" />
+       <param name="controller_frequency" value="5" />
     </node>
 
 </launch>
